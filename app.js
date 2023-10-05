@@ -1,12 +1,48 @@
 const express = require('express');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
+const path = require('path');
+const axios = require('axios'); // Importe a biblioteca axios
+const dotenv = require('dotenv'); // Importe a biblioteca dotenv
+const bodyParser = require('body-parser');
 
 const app = express();
 const port = 3131;
 
 // Middleware para analisar o corpo da solicitação como JSON
 app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Rota para criar uma pasta com arquivo list.json vazio
+app.post('/criar-pasta', (req, res) => {
+  const { nomePasta } = req.body; // Suponha que você recebe o nome da pasta no corpo da solicitação
+
+  if (!nomePasta) {
+    return res.status(400).send('O nome da pasta é obrigatório.');
+  }
+
+  const pastaPath = path.join(__dirname, 'database', nomePasta);
+
+  // Verifique se a pasta já existe
+  if (fs.existsSync(pastaPath)) {
+    return res.status(409).send('A pasta já existe.');
+  }
+
+  // Crie a pasta
+  fs.mkdirSync(pastaPath);
+
+  // Crie um arquivo list.json com um array vazio
+  const arquivoList = path.join(pastaPath, 'list.json');
+  fs.writeFileSync(arquivoList, '[]', 'utf-8');
+
+  res.status(201).send('Pasta criada com sucesso.');
+});
+
 
 app.post('/gerar-pdf', (req, res) => {
   // Aqui você deve obter os dados do corpo da solicitação POST
