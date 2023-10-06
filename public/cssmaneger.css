@@ -1,0 +1,84 @@
+/* Estilos para a tabela de clientes */
+  
+  #clientesTable th, #clientesTable td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  #clientesTable th {
+    background-color: #f2f2f2;
+  }
+  
+  #clientesTable tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  /* Estilos para os botões de redirecionamento */
+  #clientesTable button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+  }
+  
+  #clientesTable button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Estilos para o título da página */
+  h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  /* Estilos gerais */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0px;
+
+  }
+
+  #clientesTable {
+    font-family: Arial, sans-serif;
+    width: 80%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    margin-left: auto; /* Centraliza horizontalmente */
+    margin-right: auto; /* Centraliza horizontalmente */
+  }
+
+  /* Estilo para o cabeçalho */
+header {
+  background-color: #333; /* Cor de fundo */
+  color: #fff; /* Cor do texto */
+  padding: 20px 0; /* Espaçamento interno */
+}
+
+/* Estilo para o menu de navegação */
+nav ul {
+  list-style-type: none; /* Remova os marcadores de lista */
+  margin: 0;
+  padding: 0;
+  text-align: center; /* Centralize os itens do menu */
+}
+
+nav li {
+  display: inline-block; /* Coloque os itens na mesma linha */
+  margin-right: 20px; /* Espaço entre os itens do menu */
+}
+
+nav a {
+  text-decoration: none; /* Remova a decoração de texto (sublinhado) */
+  color: #fff; /* Cor do texto dos links */
+  font-weight: bold; /* Deixe o texto em negrito */
+}
+
+nav a:hover {
+  color: #ff9900; /* Cor do texto dos links ao passar o mouse */
+}

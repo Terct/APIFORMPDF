@@ -1,0 +1,140 @@
+/* Estilizando o corpo da página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Estilizando o cabeçalho */
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+/* Estilizando o formulário */
+form {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+input[type="text"] {
+    width: 95%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+button[type="button"] {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+button[type="button"]:hover {
+    background-color: #0056b3;
+}
+
+/* Estilizando o modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+    z-index: 999; /* Certifique-se de que está acima de outros elementos */
+    overflow: auto; /* Adicionar rolagem se o conteúdo do modal for longo */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 50px;
+    border-radius: 20px;
+    width: 80%;
+    max-width: 500px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+}
+
+/* Estilizando o botão de fechar */
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+}
+
+.close:hover {
+    color: #555;
+}
+
+/* Estilizando o botão "OK" dentro do modal */
+#closePopup {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 40px;
+    display: inline-block;
+}
+
+#closePopup:hover {
+    background-color: #0056b3;
+}
+
+
+
+
+/* Estilo para o cabeçalho */
+header {
+    background-color: #333; /* Cor de fundo */
+    color: #fff; /* Cor do texto */
+    padding: 20px 0; /* Espaçamento interno */
+  }
+  
+  /* Estilo para o menu de navegação */
+  nav ul {
+    list-style-type: none; /* Remova os marcadores de lista */
+    margin: 0;
+    padding: 0;
+    text-align: center; /* Centralize os itens do menu */
+  }
+  
+  nav li {
+    display: inline-block; /* Coloque os itens na mesma linha */
+    margin-right: 20px; /* Espaço entre os itens do menu */
+  }
+  
+  nav a {
+    text-decoration: none; /* Remova a decoração de texto (sublinhado) */
+    color: #fff; /* Cor do texto dos links */
+    font-weight: bold; /* Deixe o texto em negrito */
+  }
+  
+  nav a:hover {
+    color: #ff9900; /* Cor do texto dos links ao passar o mouse */
+  }

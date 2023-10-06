@@ -3,14 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criar Pasta</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Criar Intância</title>
 </head>
 <body>
-    <h1>Criar Pasta</h1>
-    <form action="/criar-pasta" method="POST">
-        <label for="nomePasta">Nome da Pasta:</label>
-        <input type="text" id="nomePasta" name="nomePasta" required>
-        <button type="submit">Criar Pasta</button>
+    <header>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/maneger">Gerenciador</a></li>
+          </ul>
+        </nav>
+      </header>
+      
+
+    <h1>Adicionar Cliente</h1>
+    <form id="myForm">
+        <label for="nomeCliente">Nome do Cliente:</label>
+        <input type="text" id="nomeCliente" name="nomeCliente" required>
+        <br>
+        <label for="nicho">Nicho:</label>
+        <input type="text" id="nicho" name="nicho" required>
+        <br>
+        <button type="button" id="submitButton">Criar Pasta</button>
     </form>
+    <div id="responseContainer"></div>
+    <!-- Modal de Resposta -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("myForm");
+            const submitButton = document.getElementById("submitButton");
+            const responseContainer = document.getElementById("responseContainer");
+            const modal = document.getElementById("myModal");
+            const modalContent = document.getElementById("modalContent");
+
+            submitButton.addEventListener("click", function (e) {
+                e.preventDefault(); // Impede o envio padrão do formulário
+
+                const nomeCliente = document.getElementById("nomeCliente").value;
+                const nicho = document.getElementById("nicho").value;
+
+                // Realize a requisição AJAX para a rota do servidor
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/criar-pasta", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                xhr.onload = function () {
+                    if (xhr.status === 201) {
+                        const response = JSON.parse(xhr.responseText);
+                        modalContent.innerHTML = `Usuário criado com sucesso. ID: ${response.id}<br><button id="closePopup">OK</button>`;
+                        modal.style.display = "block";
+
+                        // Adicione um evento de clique para fechar o modal
+                        const closePopupButton = document.getElementById("closePopup");
+                        closePopupButton.addEventListener("click", function () {
+                            modal.style.display = "none";
+                        });
+                    } else {
+                        responseContainer.innerHTML = `<div class="error">${xhr.responseText}</div>`;
+                    }
+                };
+
+                const data = JSON.stringify({ nomeCliente, nicho });
+                xhr.send(data);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lista de Clientes</title>
+  <link rel="stylesheet" type="text/css" href="cssmaneger.css">
+</head>
+<body>
+    <header>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/maneger">Gerenciador</a></li>
+          </ul>
+        </nav>
+      </header>
+      
+  <h1>Lista de Clientes</h1>
+  <table id="clientesTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome do Cliente</th>
+        <th>Nicho</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Os dados da tabela serão preenchidos aqui -->
+    </tbody>
+  </table>
+
+  <script>
+    // Função para preencher a tabela com os dados dos clientes
+    function preencherTabela(data) {
+      const clientesTable = document.getElementById('clientesTable');
+      const tbody = clientesTable.querySelector('tbody');
+
+      data.forEach((cliente) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${cliente.id}</td>
+          <td>${cliente.nomeCliente}</td>
+          <td>${cliente.nicho}</td>
+          <td><button onclick="redirecionarParaLista('${cliente.id}')">Ver Lista</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Função para redirecionar para a rota /list com o ID como parâmetro
+    function redirecionarParaLista(id) {
+      window.location.href = `/list?id=${id}`;
+    }
+
+    // Fazer a requisição à rota /dados-clientes
+    fetch('/dados-clientes')
+      .then((response) => response.json())
+      .then((data) => {
+        preencherTabela(data);
+      })
+      .catch((error) => {
+        console.error('Erro ao buscar dados dos clientes:', error);
+      });
+  </script>
+</body>
+</html>
