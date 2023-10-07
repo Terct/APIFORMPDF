@@ -230,19 +230,41 @@ function generateRandomId(length) {
   return id;
 }
 
-
 app.post('/gerar-pdf', (req, res) => {
-  // Aqui você deve obter os dados do corpo da solicitação POST
+  const requestData = req.body;
 
-  const requestData = req.body; // Suponha que os dados sejam enviados como JSON no corpo da solicitação
-  // Agora você pode usar requestData para criar o PDF
+  // Extrair parâmetros da URL
+  const { id, idresponsavel, data, cliente, num } = req.query;
 
-  // Cria um novo documento PDF
+  // Crie o caminho do diretório com base nos parâmetros
+  const pdfDir = `./public/pdfs/${idresponsavel}`;
+
+  // Verifique se o diretório existe e crie-o se não existir
+  if (!fs.existsSync(pdfDir)) {
+    try {
+      fs.mkdirSync(pdfDir, { recursive: true });
+    } catch (err) {
+      console.error('Erro ao criar diretório:', err);
+      res.status(500).send('Erro ao criar diretório');
+      return;
+    }
+  }
+
+  // Crie o caminho do arquivo PDF com base nos parâmetros
+  const pdfFileName = `${id}-${data.replace(/\//g, '-')}.pdf`;
+  const pdfPath = `${pdfDir}/${pdfFileName}`;
+
+  // Crie um novo documento PDF
   const doc = new PDFDocument();
-  doc.pipe(fs.createWriteStream('output.pdf')); // Salva o PDF em um arquivo chamado 'output.pdf'
+  const writeStream = fs.createWriteStream(pdfPath);
+  doc.pipe(writeStream);
 
   // Cabeçalho do PDF
   doc.fontSize(16).text('Exemplo de PDF gerado a partir de um array', 50, 50);
+
+  // Adicione o nome e o número do cliente ao PDF
+  doc.fontSize(12).text(`Nome do Cliente: ${cliente}`, 50, 100);
+  doc.fontSize(12).text(`Número do Cliente: ${num}`, 50, 120);
 
   // Organize as perguntas em grupos de 5 e crie uma tabela para cada grupo
   const groupSize = 5;
@@ -253,9 +275,10 @@ app.post('/gerar-pdf', (req, res) => {
 
   // Finalize o PDF e envie-o como resposta
   doc.end();
-  res.status(200).send('PDF gerado com sucesso!');
+  writeStream.on('finish', () => {
+    res.status(200).send(`PDF gerado com sucesso! Caminho do arquivo: ${pdfPath}`);
+  });
 });
-
 
 function criarTabela(doc, group) {
   // Configuração da tabela
