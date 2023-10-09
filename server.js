@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv'); // Importe a biblioteca dotenv
 const path = require('path');
+const fs = require('fs');
+const moment = require('moment-timezone');
 
 
 const app = express()
@@ -142,65 +144,100 @@ try {
 
 //Auth
 
-app.post('/user', async(req, res) =>{
+app.post('/user', async (req, res) => {
+    const { Name, Pass } = req.body;
 
-    const { Name, Pass } = req.body
-    
+    // Validações ...
+
+    const user = await User.findOne({ Name: Name });
+
+    if (!user) {
+        return res.status(422).json({ "Mensagem": "Usuário não encontrado" });
+    }
+
+    const CheckPass = await bcrypt.compare(Pass, user.Pass);
+
+    if (!CheckPass) {
+        return res.status(422).json({ "Mensagem": "Senha inválida" });
+    }
+
+    try {
+        const secret = process.env.SECRET;
+        const token = jwt.sign({ id: user._id }, secret);
+
+        const StatusClient = user.Status;
+        const idClient = user._id;
+
+        // Verifique se o arquivo sessions.json existe
+        let sessionsData = [];
+        try {
+            const sessionsJson = fs.readFileSync('sessions.json');
+            sessionsData = JSON.parse(sessionsJson);
+        } catch (err) {
+            // Se o arquivo não existir, não há necessidade de tratamento especial
+        }
+
+        // Verifique se o ID do usuário já existe nas sessões usando um loop for
+        let sessionExists = false;
+        for (let i = 0; i < sessionsData.length; i++) {
+            if (sessionsData[i].id == idClient) {
+                // Atualize apenas o token e datetime se o ID já existir
+                sessionsData[i].token = token;
+                sessionsData[i].datetime = moment().tz('America/Sao_Paulo').format();
+                sessionExists = true;
+                break;
+            }
+        }
+
+        if (!sessionExists) {
+            // Crie uma nova entrada se o ID não existir
+            sessionsData.push({
+                id: idClient,
+                token,
+                datetime: moment().tz('America/Sao_Paulo').format(),
+            });
+        }
+
+        // Salve os dados atualizados no arquivo sessions.json
+        fs.writeFileSync('sessions.json', JSON.stringify(sessionsData, null, 2));
+
+        res.status(200).json({ "Mensagem": "Usuário autenticado com sucesso", token, StatusClient, idClient });
+    } catch (err) {
+        console.log('Erro na autenticação', err);
+    }
+});
+
+// Defina o modelo Client no mesmo arquivo
+const Client = mongoose.model('Client', new mongoose.Schema({
+    Responsavel: String,
+    // Outros campos do cliente aqui
+  }));
+
+// Rota para buscar todos os clientes com base no valor da variável "Responsavel"
+app.get('/clients/:Responsavel', async (req, res) => {
+    try {
+      const Responsavel = req.params.Responsavel;
   
-//Validações
-
-    if(!Name){
-        return res.status(422).json({"Mensagem":"O usuário é obrigatório"})
+      // Consulta MongoDB para encontrar todos os clientes com o valor de "Responsavel"
+      const clients = await Client.find({ Responsavel });
+  
+      if (clients.length === 0) {
+        return res.status(404).json({ "Mensagem": "Nenhum cliente encontrado com o Responsavel especificado" });
+      }
+  
+      res.status(200).json({ clients });
+    } catch (error) {
+      console.error('Erro ao buscar clientes', error);
+      res.status(500).json({ "Mensagem": "Erro ao buscar clientes" });
     }
-    if(!Pass){
-        return res.status(422).json({"Mensagem":"A senha é obrigatoria"})
-    }
-
-
-//check
-
-const user = await User.findOne({ Name: Name })
-
-if(!user){
-    return res.status(422).json({ "Mensagem": "Usuário não encontrado"})
-}
-
-//checkPass
-
-const CheckPass = await bcrypt.compare(Pass, user.Pass)
-
-if(!CheckPass){
-    return res.status(422).json({ "Mensagem": "Senha inválida"})
-}
-
-try {
-
-    const secret = process.env.SECRET
-
-    const token = jwt.sign(
-    {
-        id: user._id,
-    },
-    secret,
-    )
-
-    const StatusClient = user.Status
-
-    res.status(200).json({"Mensagem":"Usuário autenticado com sucesso", token, StatusClient})
-    
-    
-}catch(err){
-    console.log('Erro na autenticação')
-}
-
-
-})
-
+  });
+  
 
 const dbUser = process.env.DB_USER
 const dbPass = process.env.DB_PASS
+const dbName = process.env.DB_NAME
 
-const dbURI = `mongodb+srv://${dbUser}:${dbPass}@mydatabase.x1wihtt.mongodb.net/?retryWrites=true&w=majority`;
+const dbURI = `mongodb+srv://${dbUser}:${dbPass}@mydatabase.x1wihtt.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {

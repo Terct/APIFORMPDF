@@ -5,6 +5,10 @@ const path = require('path');
 const axios = require('axios'); // Importe a biblioteca axios
 const dotenv = require('dotenv'); // Importe a biblioteca dotenv
 const bodyParser = require('body-parser');
+const ExcelJS = require('exceljs');
+const Excel = require('excel4node');
+const { execPath } = require('process');
+
 
 const app = express();
 const port = 3131;
@@ -15,73 +19,64 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.post('/user', async (req, res) => {
+  const { Name, Pass } = req.body;
 
-app.get('/maneger', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'maneger.html'));
-});
+  // Validações ...
 
-app.get('/list', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'maneger-list.html'));
-});
+  const user = await User.findOne({ Name: Name });
 
-
-app.get('/consult-list', (req, res) => {
-  const { id } = req.query;
-
-  if (!id) {
-    return res.status(400).json({ error: 'O parâmetro "id" é obrigatório.' });
+  if (!user) {
+      return res.status(422).json({ "Mensagem": "Usuário não encontrado" });
   }
 
-  const listFilePath = path.join(__dirname, 'database', id, 'list.json');
+  const CheckPass = await bcrypt.compare(Pass, user.Pass);
 
-  // Verificar se o arquivo list.json existe
-  if (!fs.existsSync(listFilePath)) {
-    return res.status(404).json({ error: 'Arquivo list.json não encontrado para o ID especificado.' });
+  if (!CheckPass) {
+      return res.status(422).json({ "Mensagem": "Senha inválida" });
   }
 
-  // Ler o arquivo list.json e enviar seu conteúdo como resposta
-  const listFileContent = fs.readFileSync(listFilePath, 'utf-8');
   try {
-    const listData = JSON.parse(listFileContent);
-    res.json(listData);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao analisar o arquivo list.json.' });
+      const secret = process.env.SECRET;
+      const token = jwt.sign({ id: user._id }, secret);
+
+      const StatusClient = user.Status;
+      const idClient = user._id;
+
+      // Verifique se o arquivo sessions.json existe
+      let sessionsData = [];
+      try {
+          const sessionsJson = fs.readFileSync('sessions.json');
+          sessionsData = JSON.parse(sessionsJson);
+      } catch (err) {
+          // Se o arquivo não existir, não há necessidade de tratamento especial
+      }
+
+      // Encontre o índice do usuário no array de sessões, se existir
+      const userIndex = sessionsData.findIndex(session => session.id === idClient);
+
+      if (userIndex !== -1) {
+          // Atualize apenas o token e datetime se o ID já existir
+          sessionsData[userIndex].token = token;
+          sessionsData[userIndex].datetime = moment().tz('America/Sao_Paulo').format();
+      } else {
+          // Crie uma nova entrada se o ID não existir
+          sessionsData.push({
+              id: idClient,
+              token,
+              datetime: moment().tz('America/Sao_Paulo').format(),
+          });
+      }
+
+      // Salve os dados atualizados no arquivo sessions.json
+      fs.writeFileSync('sessions.json', JSON.stringify(sessionsData, null, 2));
+
+      res.status(200).json({ "Mensagem": "Usuário autenticado com sucesso", token, StatusClient, idClient });
+  } catch (err) {
+      console.log('Erro na autenticação', err);
   }
 });
 
-app.post('/adicionar-pergunta', (req, res) => {
-  const { id, pergunta, resposta } = req.body;
-
-  if (!id || !pergunta || !resposta) {
-    return res.status(400).json({ error: 'ID, pergunta e resposta são obrigatórios.' });
-  }
-
-  const listFilePath = path.join(__dirname, 'database', id, 'list.json');
-
-  // Verificar se o arquivo list.json existe
-  if (!fs.existsSync(listFilePath)) {
-    return res.status(404).json({ error: 'Arquivo list.json não encontrado para o ID especificado.' });
-  }
-
-  // Ler o conteúdo atual do arquivo list.json
-  const listFileContent = fs.readFileSync(listFilePath, 'utf-8');
-  try {
-    const listData = JSON.parse(listFileContent);
-
-    // Adicionar a nova pergunta ao array
-    listData.push({ PERGUNTA: pergunta, RESPOSTA: resposta });
-
-    // Escrever o conteúdo atualizado de volta no arquivo
-    fs.writeFileSync(listFilePath, JSON.stringify(listData, null, 2), 'utf-8');
-
-    res.json({ message: 'Pergunta adicionada com sucesso.' });
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao analisar o arquivo list.json.' });
-  }
-});
 
 app.delete('/apagar-pergunta', (req, res) => {
   const { id, index } = req.body;
@@ -230,16 +225,67 @@ function generateRandomId(length) {
   return id;
 }
 
-app.post('/gerar-pdf', (req, res) => {
+app.post('/gerar-pdf', async (req, res) => {
   const requestData = req.body;
+  const { id, idresponsavel, nome, telefone, data, num, cliente } = req.query; // Obtenha os parâmetros da consulta
 
-  // Extrair parâmetros da URL
-  const { id, idresponsavel, data, cliente, num } = req.query;
+  // Verifique se todos os parâmetros necessários estão presentes
+  if (!id || !idresponsavel || !data || !num || !cliente) {
+    return res.status(400).json({ error: 'Parâmetros incompletos na consulta.' });
+  }
 
-  // Crie o caminho do diretório com base nos parâmetros
+  // Caminho do arquivo Excel temporário
+  const excelDir = `./public/excel/${idresponsavel}`;
+
+  if (!fs.existsSync(excelDir)) {
+    try {
+      fs.mkdirSync(excelDir, { recursive: true });
+    } catch (err) {
+      console.error('Erro ao criar diretório:', err);
+      res.status(500).send('Erro ao criar diretório');
+      return;
+    }
+  }
+
+  
+  const excelFileName = `${id}-${data.replace(/\//g, '-')}.xlsx`;
+  const dirExcelFinal = `${excelDir}/${excelFileName}`
+  const excelPath = path.join(excelDir, excelFileName);
+
+  // Configurar a planilha do Excel
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Respostas');
+
+  // Configurar cabeçalhos da planilha
+  worksheet.getCell('A2').value = 'Nome:';
+  worksheet.getCell('A3').value = 'Telefone:';
+  worksheet.getCell('A4').value = 'Data:';
+  worksheet.getCell('B2').value = nome;
+  worksheet.getCell('B3').value = telefone;
+  worksheet.getCell('B4').value = data;
+
+  // Configurar cabeçalho da tabela de perguntas e respostas
+  worksheet.getCell('A10').value = 'Perguntas';
+  worksheet.getCell('B10').value = 'Respostas';
+
+  // Preencher a tabela de perguntas e respostas com os dados do corpo da solicitação
+  requestData.forEach((item, index) => {
+    worksheet.getCell(`A${index + 11}`).value = item.PERGUNTA;
+    worksheet.getCell(`B${index + 11}`).value = item.RESPOSTA;
+  });
+
+  // Salvar a planilha em um arquivo Excel
+  await workbook.xlsx.writeFile(excelPath);
+
+  console.log(dirExcelFinal)
+
+  // Agora que o Excel foi gerado com sucesso, chame a função para converter em PDF
+  convertXlsxToPdf(dirExcelFinal, idresponsavel, id, data, res);
+});
+
+async function convertXlsxToPdf(inputFilePath, idresponsavel, id, data, res) {
   const pdfDir = `./public/pdfs/${idresponsavel}`;
 
-  // Verifique se o diretório existe e crie-o se não existir
   if (!fs.existsSync(pdfDir)) {
     try {
       fs.mkdirSync(pdfDir, { recursive: true });
@@ -250,68 +296,67 @@ app.post('/gerar-pdf', (req, res) => {
     }
   }
 
-  // Crie o caminho do arquivo PDF com base nos parâmetros
   const pdfFileName = `${id}-${data.replace(/\//g, '-')}.pdf`;
-  const pdfPath = `${pdfDir}/${pdfFileName}`;
+  const pdfPath = path.join(pdfDir, pdfFileName);
 
-  // Crie um novo documento PDF
-  const doc = new PDFDocument();
-  const writeStream = fs.createWriteStream(pdfPath);
-  doc.pipe(writeStream);
-
-  // Cabeçalho do PDF
-  doc.fontSize(16).text('Exemplo de PDF gerado a partir de um array', 50, 50);
-
-  // Adicione o nome e o número do cliente ao PDF
-  doc.fontSize(12).text(`Nome do Cliente: ${cliente}`, 50, 100);
-  doc.fontSize(12).text(`Número do Cliente: ${num}`, 50, 120);
-
-  // Organize as perguntas em grupos de 5 e crie uma tabela para cada grupo
-  const groupSize = 5;
-  for (let i = 0; i < requestData.length; i += groupSize) {
-    const group = requestData.slice(i, i + groupSize);
-    criarTabela(doc, group);
+  const workbook = new ExcelJS.Workbook();
+  try {
+    await workbook.xlsx.readFile(inputFilePath);
+  } catch (err) {
+    console.error('Erro ao ler arquivo XLSX:', err);
+    res.status(500).send('Erro ao ler arquivo XLSX');
+    return;
   }
 
-  // Finalize o PDF e envie-o como resposta
+  const doc = new PDFDocument();
+  const stream = fs.createWriteStream(pdfPath);
+
+  doc.pipe(stream);
+
+  const margemEsquerda = 50;
+  const margemSuperior = 50;
+  const espacoEntreColunas = 20;
+
+  workbook.eachSheet((worksheet) => {
+    let currentX = margemEsquerda;
+    const columnWidths = {}; // Armazenar as larguras de coluna calculadas
+
+    worksheet.eachRow((row, rowNumber) => {
+      row.eachCell((cell, colNumber) => {
+        const x = currentX;
+        const y = margemSuperior + (rowNumber - 1) * 20;
+
+        const cellValue = cell.value.toString();
+        doc.text(cellValue, x, y);
+
+        // Calcular a largura da coluna com base no comprimento do texto
+        const cellWidth = doc.widthOfString(cellValue);
+        if (!columnWidths[colNumber] || cellWidth > columnWidths[colNumber]) {
+          columnWidths[colNumber] = cellWidth;
+        }
+
+        currentX += columnWidths[colNumber] + espacoEntreColunas;
+      });
+
+      currentX = margemEsquerda;
+    });
+  });
+
+  // Definir as larguras das colunas no PDF
+  for (let colNumber = 1; colNumber <= workbook.columnCount; colNumber++) {
+    doc.widths[colNumber - 1] = columnWidths[colNumber] || 0;
+  }
+
   doc.end();
-  writeStream.on('finish', () => {
-    res.status(200).send(`PDF gerado com sucesso! Caminho do arquivo: ${pdfPath}`);
-  });
-});
 
-function criarTabela(doc, group) {
-  // Configuração da tabela
-  const tableX = 50;
-  const tableY = doc.y + 15;
-  const col1Width = 300;
-  const col2Width = 50;
-  const col3Width = 50;
-  const rowHeight = 20;
-  const headerHeight = 25;
-
-  // Cabeçalho da tabela
-  doc
-    .fontSize(12)
-    .text('Perguntas', tableX, doc.y, { width: col1Width })
-    .text('SIM', tableX + col1Width, doc.y, { width: col2Width })
-    .text('NÃO', tableX + col1Width + col2Width, doc.y, { width: col3Width });
-
-  doc.moveDown();
-
-  // Linhas da tabela
-  group.forEach((item, index) => {
-    doc
-      .fontSize(12)
-      .text(item.PERGUNTA, tableX, doc.y, { width: col1Width, height: rowHeight })
-      .text(item.SIM, tableX + col1Width, doc.y, { width: col2Width, height: rowHeight })
-      .text(item.NÃO, tableX + col1Width + col2Width, doc.y, { width: col3Width, height: rowHeight });
-
-    doc.moveDown();
+  stream.on('finish', () => {
+    res.status(200).send(`Arquivo PDF gerado com sucesso! Caminho do arquivo: ${pdfPath}`);
   });
 
-  // Mova a posição Y para a próxima seção
-  doc.moveDown();
+  stream.on('error', (error) => {
+    console.error('Erro ao gerar o PDF:', error);
+    res.status(500).send('Erro ao gerar o PDF');
+  });
 }
 
 app.listen(port, () => {
