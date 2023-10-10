@@ -22,6 +22,9 @@
         <label for="nomeCliente">Nome do Cliente:</label>
         <input type="text" id="nomeCliente" name="nomeCliente" required>
         <br>
+        <label for="email">Email:</label>
+        <input type="text" id="email" name="email" required>
+        <br>
         <label for="nicho">Nicho:</label>
         <input type="text" id="nicho" name="nicho" required>
         <br>
@@ -49,6 +52,7 @@
 
                 const nomeCliente = document.getElementById("nomeCliente").value;
                 const nicho = document.getElementById("nicho").value;
+                const email = document.getElementById("email").value;
 
                 // Realize a requisição AJAX para a rota do servidor
                 const xhr = new XMLHttpRequest();
@@ -71,7 +75,7 @@
                     }
                 };
 
-                const data = JSON.stringify({ nomeCliente, nicho });
+                const data = JSON.stringify({ nomeCliente, nicho, email });
                 xhr.send(data);
             });
         });

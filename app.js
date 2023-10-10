@@ -19,64 +19,74 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
-app.post('/user', async (req, res) => {
-  const { Name, Pass } = req.body;
 
-  // Validações ...
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
-  const user = await User.findOne({ Name: Name });
+app.get('/maneger', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'maneger.html'));
+});
 
-  if (!user) {
-      return res.status(422).json({ "Mensagem": "Usuário não encontrado" });
+app.get('/list', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'maneger-list.html'));
+});
+
+
+app.get('/consult-list', (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ error: 'O parâmetro "id" é obrigatório.' });
   }
 
-  const CheckPass = await bcrypt.compare(Pass, user.Pass);
+  const listFilePath = path.join(__dirname, 'database', id, 'list.json');
 
-  if (!CheckPass) {
-      return res.status(422).json({ "Mensagem": "Senha inválida" });
+  // Verificar se o arquivo list.json existe
+  if (!fs.existsSync(listFilePath)) {
+    return res.status(404).json({ error: 'Arquivo list.json não encontrado para o ID especificado.' });
   }
 
+  // Ler o arquivo list.json e enviar seu conteúdo como resposta
+  const listFileContent = fs.readFileSync(listFilePath, 'utf-8');
   try {
-      const secret = process.env.SECRET;
-      const token = jwt.sign({ id: user._id }, secret);
-
-      const StatusClient = user.Status;
-      const idClient = user._id;
-
-      // Verifique se o arquivo sessions.json existe
-      let sessionsData = [];
-      try {
-          const sessionsJson = fs.readFileSync('sessions.json');
-          sessionsData = JSON.parse(sessionsJson);
-      } catch (err) {
-          // Se o arquivo não existir, não há necessidade de tratamento especial
-      }
-
-      // Encontre o índice do usuário no array de sessões, se existir
-      const userIndex = sessionsData.findIndex(session => session.id === idClient);
-
-      if (userIndex !== -1) {
-          // Atualize apenas o token e datetime se o ID já existir
-          sessionsData[userIndex].token = token;
-          sessionsData[userIndex].datetime = moment().tz('America/Sao_Paulo').format();
-      } else {
-          // Crie uma nova entrada se o ID não existir
-          sessionsData.push({
-              id: idClient,
-              token,
-              datetime: moment().tz('America/Sao_Paulo').format(),
-          });
-      }
-
-      // Salve os dados atualizados no arquivo sessions.json
-      fs.writeFileSync('sessions.json', JSON.stringify(sessionsData, null, 2));
-
-      res.status(200).json({ "Mensagem": "Usuário autenticado com sucesso", token, StatusClient, idClient });
-  } catch (err) {
-      console.log('Erro na autenticação', err);
+    const listData = JSON.parse(listFileContent);
+    res.json(listData);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao analisar o arquivo list.json.' });
   }
 });
 
+app.post('/adicionar-pergunta', (req, res) => {
+  const { id, pergunta, resposta } = req.body;
+
+  if (!id || !pergunta || !resposta) {
+    return res.status(400).json({ error: 'ID, pergunta e resposta são obrigatórios.' });
+  }
+
+  const listFilePath = path.join(__dirname, 'database', id, 'list.json');
+
+  // Verificar se o arquivo list.json existe
+  if (!fs.existsSync(listFilePath)) {
+    return res.status(404).json({ error: 'Arquivo list.json não encontrado para o ID especificado.' });
+  }
+
+  // Ler o conteúdo atual do arquivo list.json
+  const listFileContent = fs.readFileSync(listFilePath, 'utf-8');
+  try {
+    const listData = JSON.parse(listFileContent);
+
+    // Adicionar a nova pergunta ao array
+    listData.push({ PERGUNTA: pergunta, RESPOSTA: resposta });
+
+    // Escrever o conteúdo atualizado de volta no arquivo
+    fs.writeFileSync(listFilePath, JSON.stringify(listData, null, 2), 'utf-8');
+
+    res.json({ message: 'Pergunta adicionada com sucesso.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao analisar o arquivo list.json.' });
+  }
+});
 
 app.delete('/apagar-pergunta', (req, res) => {
   const { id, index } = req.body;
@@ -165,55 +175,76 @@ app.get('/dados-clientes', (req, res) => {
 });
 
 
-app.post('/criar-pasta', (req, res) => {
-  const { nomeCliente, nicho } = req.body;
+app.post('/criar-pasta', async (req, res) => {
+  const { nomeCliente, nicho, email } = req.body;
 
-  console.log(nomeCliente)
+  console.log(nomeCliente);
 
-  if (!nomeCliente || !nicho) {
+  if (!nomeCliente || !nicho || !email) {
     return res.status(400).send('O nome do cliente e o nicho são obrigatórios.');
   }
 
   // Gerar um ID de 15 caracteres
   const id = generateRandomId(15);
 
-  const pastaPath = path.join(__dirname, 'database', id);
+  // Fazer uma requisição Axios para criar o usuário
+  try {
+    const response = await axios.post('http://localhost:31313/Creat/User', {
+      Name: id,
+      Pass: id,
+      ConfirmPass: id,
+      Email: email,
+      Status: 'Ativo'
+    });
 
-  // Verificar se a pasta já existe
-  if (fs.existsSync(pastaPath)) {
-    return res.status(409).send('A pasta já existe.');
+    console.log('Resposta da requisição:', response.data);
+
+    if (response.status === 201) {
+      const pastaPath = path.join(__dirname, 'database', id);
+
+      // Verificar se a pasta já existe
+      if (fs.existsSync(pastaPath)) {
+        return res.status(409).send('A pasta já existe.');
+      }
+
+      // Criar a pasta
+      fs.mkdirSync(pastaPath);
+
+      // Crie um arquivo list.json com um array vazio dentro da pasta
+      const arquivoList = path.join(pastaPath, 'list.json');
+      fs.writeFileSync(arquivoList, '[]', 'utf-8');
+
+      // Criar um objeto com os dados do cliente
+      const clienteData = {
+        id,
+        nomeCliente,
+        nicho,
+      };
+
+      // Ler o arquivo data.json se ele existir
+      let data = [];
+      const dataPath = path.join(__dirname, 'database', 'data.json');
+      if (fs.existsSync(dataPath)) {
+        const dataFile = fs.readFileSync(dataPath, 'utf-8');
+        data = JSON.parse(dataFile);
+      }
+
+      // Adicionar os dados do cliente ao array
+      data.push(clienteData);
+
+      // Salvar os dados no arquivo data.json
+      fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
+
+      res.status(201).json({ id });
+    } else {
+      res.status(500).send('Ocorreu um erro ao criar o usuário.');
+    }
+  } catch (error) {
+    console.error('Erro ao fazer a requisição:', error);
+    res.status(500).send('Ocorreu um erro ao criar o usuário.');
   }
-
-  // Criar a pasta
-  fs.mkdirSync(pastaPath);
-
-  // Crie um arquivo list.json com um array vazio dentro da pasta
-  const arquivoList = path.join(pastaPath, 'list.json');
-  fs.writeFileSync(arquivoList, '[]', 'utf-8');
-
-  // Criar um objeto com os dados do cliente
-  const clienteData = {
-    id,
-    nomeCliente,
-    nicho,
-  };
-
-  // Ler o arquivo data.json se ele existir
-  let data = [];
-  const dataPath = path.join(__dirname, 'database', 'data.json');
-  if (fs.existsSync(dataPath)) {
-    const dataFile = fs.readFileSync(dataPath, 'utf-8');
-    data = JSON.parse(dataFile);
-  }
-
-  // Adicionar os dados do cliente ao array
-  data.push(clienteData);
-
-  // Salvar os dados no arquivo data.json
-  fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
-
-  res.status(201).json({ id });
 });
+
 
 // Função para gerar um ID aleatório de comprimento especificado
 function generateRandomId(length) {
