@@ -45,6 +45,24 @@ const user = await User.findById(id, '-Pass')
 
 //ClientsInfo
 
+app.get('/client/:id', async(req, res) =>{
+    const id = req.params.id
+    
+    const user = await Client.findById(id, '-Pass')
+    
+        if(!user) {
+            return res.status(402).json({ msg: 'Usuário não encontrado!' })
+        }
+    
+    
+        res.status(200).json({ user })
+    
+    })
+    
+
+
+//ClientsInfo
+
 app.put('/user/edit/:id', async(req, res) =>{
   
   try {

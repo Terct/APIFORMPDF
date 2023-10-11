@@ -390,6 +390,40 @@ async function convertXlsxToPdf(inputFilePath, idresponsavel, id, data, res) {
   });
 }
 
+
+app.delete('/apagar-client/:id', (req, res) => {
+  const clientId = req.params.id;
+  
+  // Lógica para remover o cliente do arquivo JSON
+  const dataFilePath = path.join(__dirname, 'database', 'data.json');
+  let data = JSON.parse(fs.readFileSync(dataFilePath));
+  
+  const updatedData = data.filter(client => client.id !== clientId);
+  
+  fs.writeFileSync(dataFilePath, JSON.stringify(updatedData, null, 2));
+  
+  // Verificar e excluir diretórios associados ao cliente
+  const pdfDirectoryPath = path.join(__dirname, 'public', 'pdfs', clientId);
+  const excelDirectoryPath = path.join(__dirname, 'public', 'excel', clientId);
+  const listDirectoryPath = path.join(__dirname, 'database', clientId);
+
+  if (fs.existsSync(pdfDirectoryPath)) {
+    fs.rmdirSync(pdfDirectoryPath, { recursive: true });
+  }
+
+  if (fs.existsSync(listDirectoryPath)) {
+    fs.rmdirSync(listDirectoryPath, { recursive: true });
+  }
+
+  if (fs.existsSync(listDirectoryPath)) {
+    fs.rmdirSync(listDirectoryPath, { recursive: true });
+  }
+
+  res.status(204).send(); // Responder com sucesso (código 204) após a exclusão
+});
+
+
+
 app.listen(port, () => {
   console.log(`API está rodando em http://localhost:${port}`);
 });

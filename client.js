@@ -98,6 +98,30 @@ app.post("/validacao", (req, res) => {
 });
 
 
+app.get("/baixar-pdf", (req, res) => {
+  const id = req.query.id;
+  const responsavel = req.query.responsavel;
+  const data = req.query.data;
+
+  // Construa o caminho do arquivo PDF
+  const filePath = `./public/pdfs/${responsavel}/${id}-${data}.pdf`;
+
+  // Envie o arquivo PDF como resposta
+  res.sendFile(path.join(__dirname, filePath));
+});
+
+app.get("/baixar-excel", (req, res) => {
+  const id = req.query.id;
+  const responsavel = req.query.responsavel;
+  const data = req.query.data;
+
+  // Construa o caminho do arquivo PDF
+  const filePath = `./public/excel/${responsavel}/${id}-${data}.xlsx`;
+
+  // Envie o arquivo PDF como resposta
+  res.sendFile(path.join(__dirname, filePath));
+});
+
 
 app.listen(port, () => {
   console.log(`API está rodando em http://localhost:${port}`);

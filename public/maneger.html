@@ -41,7 +41,11 @@
           <td>${cliente.id}</td>
           <td>${cliente.nomeCliente}</td>
           <td>${cliente.nicho}</td>
-          <td><button onclick="redirecionarParaLista('${cliente.id}')">Ver Lista</button></td>
+          <td>
+            <button onclick="redirecionarParaLista('${cliente.id}')">Ver Lista</button>
+            <button onclick="deletarCliente('${cliente.id}')">Deletar</button>
+          </td>
+
         `;
         tbody.appendChild(row);
       });
@@ -61,6 +65,28 @@
       .catch((error) => {
         console.error('Erro ao buscar dados dos clientes:', error);
       });
+
+      function deletarCliente(id) {
+  if (confirm('Tem certeza de que deseja excluir este cliente?')) {
+    fetch(`/apagar-client/${id}`, { method: 'DELETE' })
+      .then((response) => {
+        if (response.status === 204) {
+          // Cliente excluído com sucesso, atualize a tabela
+          
+          location.reload();
+
+          if (row) {
+            row.remove();
+          }
+        } else {
+          console.error('Erro ao excluir cliente');
+        }
+      })
+      .catch((error) => {
+        console.error('Erro ao excluir cliente:', error);
+      });
+  }
+}
   </script>
 </body>
 </html>
