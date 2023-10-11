@@ -1,35 +1,141 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Lista de Clientes</title>
   <link rel="stylesheet" type="text/css" href="cssmaneger.css">
 </head>
-<body>
-    <header>
-        <nav>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/maneger">Gerenciador</a></li>
-          </ul>
-        </nav>
-      </header>
-      
-  <h1>Lista de Clientes</h1>
-  <table id="clientesTable">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nome do Cliente</th>
-        <th>Nicho</th>
-        <th>Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Os dados da tabela serão preenchidos aqui -->
-    </tbody>
-  </table>
 
+<body>
+
+  <div id="login-container" style="display:none">
+    <div id="login-box">
+      <h1>Login</h1>
+      <input type="text" id="name-input" placeholder="Digite seu Usuário">
+      <input type="text" id="pass-input" placeholder="Digite sua Senha">
+      <button id="login-button">Login</button>
+    </div>
+  </div>
+
+  <header>
+    <nav>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/manager">Gerenciador</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div id="itens" style="display:none">
+    <h1>Lista de Clientes</h1>
+    <table id="clientesTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nome do Cliente</th>
+          <th>Nicho</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Os dados da tabela serão preenchidos aqui -->
+      </tbody>
+    </table>
+  </div>
   <script>
+    
+     document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get("session");
+            const idClient = urlParams.get("idClient");
+
+            // Adicione os parâmetros aos links de navegação
+            const homeLink = document.querySelector("header nav ul li:first-child a");
+            const managerLink = document.querySelector("header nav ul li:last-child a");
+
+            if (session && idClient) {
+                homeLink.href = `/?session=${session}&idClient=${idClient}`;
+                managerLink.href = `/manager?session=${session}&idClient=${idClient}`;
+            }
+        });
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const session = urlParams.get("session");
+      const id = urlParams.get("id");
+      const idclient = urlParams.get("idClient");
+
+      if (!session || !idclient) {
+        // Os parâmetros de session e id não estão presentes na URL, então exiba o balão de login.
+        const loginContainer = document.getElementById("login-container");
+        window.location.href = "/";
+        //loginContainer.style.display = "block";
+
+        // Adicione um evento de clique ao botão de login.
+        const loginButton = document.getElementById("login-button");
+        loginButton.addEventListener("click", function () {
+          // Obtenha o ID digitado pelo usuário.
+          const nameInput = document.getElementById("name-input");
+          const passInput = document.getElementById("pass-input");
+          const nameValue = nameInput.value;
+          const passValue = passInput.value;
+
+
+          // Faça uma solicitação de login via AJAX para a rota /login.
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/login-admin", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              // O usuário foi autenticado com sucesso.
+              const response = JSON.parse(xhr.responseText);
+              const token = response.token;
+              const idClient = response.idClient;
+
+
+              // Redirecione o usuário para a mesma página com os parâmetros session e id na URL.
+              window.location.href = `?session=${token}&idClient=${idClient}`;
+            }
+          };
+
+          const requestBody = JSON.stringify({ nameCollect: nameValue, passCollect: passValue });
+          xhr.send(requestBody);
+        });
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const session = urlParams.get("session");
+      const idClient = urlParams.get("idClient");
+
+      if (session && idClient) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/validacao", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              // Sessão válida
+              console.log("Sessão válida");
+              const divItens = document.getElementById("itens");
+              divItens.style.display = "block";
+
+            } else {
+              // Sessão expirada ou inválida, limpe os parâmetros da URL
+              window.location.href = "/";
+            }
+          }
+        };
+
+        const requestBody = JSON.stringify({ idClient, token: session });
+        xhr.send(requestBody);
+      }
+    });
+
     // Função para preencher a tabela com os dados dos clientes
     function preencherTabela(data) {
       const clientesTable = document.getElementById('clientesTable');
@@ -53,7 +159,11 @@
 
     // Função para redirecionar para a rota /list com o ID como parâmetro
     function redirecionarParaLista(id) {
-      window.location.href = `/list?id=${id}`;
+      const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get("session");
+            const idClient = urlParams.get("idClient");
+
+      window.location.href = `/list?session=${session}&idClient=${idClient}&id=${id}`;
     }
 
     // Fazer a requisição à rota /dados-clientes
@@ -66,27 +176,29 @@
         console.error('Erro ao buscar dados dos clientes:', error);
       });
 
-      function deletarCliente(id) {
-  if (confirm('Tem certeza de que deseja excluir este cliente?')) {
-    fetch(`/apagar-client/${id}`, { method: 'DELETE' })
-      .then((response) => {
-        if (response.status === 204) {
-          // Cliente excluído com sucesso, atualize a tabela
-          
-          location.reload();
+    function deletarCliente(id) {
+      if (confirm('Tem certeza de que deseja excluir este cliente?')) {
+        fetch(`/apagar-client/${id}`, { method: 'DELETE' })
+          .then((response) => {
+            if (response.status === 204) {
+              // Cliente excluído com sucesso, atualize a tabela
 
-          if (row) {
-            row.remove();
-          }
-        } else {
-          console.error('Erro ao excluir cliente');
-        }
-      })
-      .catch((error) => {
-        console.error('Erro ao excluir cliente:', error);
-      });
-  }
-}
+              location.reload();
+
+              if (row) {
+                row.remove();
+              }
+            } else {
+              console.error('Erro ao excluir cliente');
+            }
+          })
+          .catch((error) => {
+            console.error('Erro ao excluir cliente:', error);
+          });
+      }
+    }
+
   </script>
 </body>
+
 </html>

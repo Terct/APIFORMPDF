@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/maneger', (req, res) => {
+app.get('/manager', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'maneger.html'));
 });
 
@@ -419,7 +419,86 @@ app.delete('/apagar-client/:id', (req, res) => {
     fs.rmdirSync(listDirectoryPath, { recursive: true });
   }
 
-  res.status(204).send(); // Responder com sucesso (código 204) após a exclusão
+
+  
+// Após a remoção das pastas, faça uma requisição DELETE com o Axios
+axios.delete(`http://localhost:31313/delete-client-user/${clientId}`)
+.then(response => {
+  if (response.status === 200) {
+    console.log('Tudo saiu ok!'); // Mensagem de sucesso
+  } else {
+    console.log('A solicitação não retornou o status 200.');
+  }
+})
+.catch(error => {
+  console.error('Ocorreu um erro ao fazer a solicitação DELETE:', error);
+});
+
+// Responda com sucesso (código 204) após a exclusão
+res.status(204).send();
+
+});
+
+
+app.post("/login-admin", (req, res) => {
+  // Verifique o ID do usuário (substitua por sua própria lógica de autenticação).
+  const nameCollect = req.body.nameCollect;
+  const passCollect  = req.body.passCollect;
+
+  console.log(nameCollect , passCollect )
+
+  // Fazer uma requisição axios para 'http://localhost:31313/user' com os dados do usuário.
+  axios.post('http://localhost:31313/user-admin', {
+    Name: nameCollect ,
+    Pass: passCollect 
+  })
+    .then(axiosResponse => {
+      // Você pode processar a resposta da outra rota aqui, se necessário.
+      console.log(axiosResponse.data);
+
+      // Retorne a resposta da requisição axios como resposta para a rota "/login".
+      res.status(200).json(axiosResponse.data);
+    })
+    .catch(axiosError => {
+      console.error(axiosError);
+
+      // Se a autenticação falhar, retorne um status de erro.
+      res.status(401).json({ Mensagem: "Falha na autenticação" });
+    });
+});
+
+app.post("/validacao", (req, res) => {
+  const idClient = req.body.idClient;
+  const token = req.body.token;
+
+  // Lê o arquivo sessions.json
+  const sessionsFilePath = path.join(__dirname, "sessions.json");
+  const sessions = JSON.parse(fs.readFileSync(sessionsFilePath, "utf8"));
+
+  // Encontra a sessão correspondente pelo idClient
+  const session = sessions.find((session) => session.id === idClient);
+
+  if (!session) {
+    //console.log("Não encontarda!")
+      return res.status(401).json({ Mensagem: "Sessão não encontrada" });
+  }
+
+  if (session.token !== token) {
+    //console.log("Não confere!")
+      return res.status(401).json({ Mensagem: "Sessão expirada" });
+  }
+
+  const datetime = new Date(session.datetime);
+  const currentDate = new Date();
+
+  // Verifique se a sessão expirou (mais de 30 minutos da última atualização)
+  if (currentDate - datetime > 30 * 60 * 1000) {
+    //console.log("Expirada!")
+      return res.status(401).json({ Mensagem: "Sessão expirada" });
+  }
+
+  // Sessão válida
+  res.status(200).json({ Mensagem: "Sessão válida" });
 });
 
 

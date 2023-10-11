@@ -11,43 +11,147 @@
     <nav>
       <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/maneger">Gerenciador</a></li>
+        <li><a href="/manager">Gerenciador</a></li>
       </ul>
     </nav>
   </header>
-  <div id="corpo">
-    <h2>Adicionar Pergunta</h2>
-    <form id="adicionarForm">
-      <input type="text" id="novaPergunta" placeholder="Nova Pergunta" required>
-      <select id="tipoResposta" required>
-        <option value="SIM/NÃO">SIM/NÃO</option>
-        <option value="LIVRE">LIVRE</option>
-      </select>
-      <button type="submit">Adicionar</button>
-    </form>
 
-    <div id="modalEditar" class="modal" style="display: none;">
-      <div class="modal-content">
-        <span class="close" onclick="fecharModalEditar()">&times;</span>
-        <h3>Editar Pergunta</h3>
-        <form id="editarForm">
-          <input type="text" id="editarPergunta" placeholder="Editar Pergunta" required>
-          <select id="editarResposta" required>
-            <option value="SIM/NÃO">SIM/NÃO</option>
-            <option value="LIVRE">LIVRE</option>
-          </select>
-          <button type="submit">Salvar</button>
-        </form>
+  <div id="login-container" style="display:none">
+    <div id="login-box">
+      <h1>Login</h1>
+      <input type="text" id="name-input" placeholder="Digite seu Usuário">
+      <input type="text" id="pass-input" placeholder="Digite sua Senha">
+      <button id="login-button">Login</button>
+    </div>
+  </div>
+  <div id="itens" style="display:none">
+    <div id="corpo">
+      <h2>Adicionar Pergunta</h2>
+      <form id="adicionarForm">
+        <input type="text" id="novaPergunta" placeholder="Nova Pergunta" required>
+        <select id="tipoResposta" required>
+          <option value="SIM/NÃO">SIM/NÃO</option>
+          <option value="LIVRE">LIVRE</option>
+        </select>
+        <button type="submit">Adicionar</button>
+      </form>
+
+      <div id="modalEditar" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="fecharModalEditar()">&times;</span>
+          <h3>Editar Pergunta</h3>
+          <form id="editarForm">
+            <input type="text" id="editarPergunta" placeholder="Editar Pergunta" required>
+            <select id="editarResposta" required>
+              <option value="SIM/NÃO">SIM/NÃO</option>
+              <option value="LIVRE">LIVRE</option>
+            </select>
+            <button type="submit">Salvar</button>
+          </form>
+        </div>
       </div>
-    </div>
 
-    <h1>Lista de Perguntas</h1>
-    <div id="listaDetalhes">
-      <!-- A tabela de perguntas e respostas será preenchida aqui -->
-    </div>
+      <h1>Lista de Perguntas</h1>
+      <div id="listaDetalhes">
+        <!-- A tabela de perguntas e respostas será preenchida aqui -->
+      </div>
 
+    </div>
   </div>
   <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const session = urlParams.get("session");
+      const idClient = urlParams.get("idClient");
+
+      // Adicione os parâmetros aos links de navegação
+      const homeLink = document.querySelector("header nav ul li:first-child a");
+      const managerLink = document.querySelector("header nav ul li:last-child a");
+
+      if (session && idClient) {
+        homeLink.href = `/?session=${session}&idClient=${idClient}`;
+        managerLink.href = `/manager?session=${session}&idClient=${idClient}`;
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const session = urlParams.get("session");
+      const id = urlParams.get("id");
+      const idclient = urlParams.get("idClient");
+
+      if (!session || !idclient) {
+        // Os parâmetros de session e id não estão presentes na URL, então exiba o balão de login.
+        const loginContainer = document.getElementById("login-container");
+        window.location.href = "/";
+        //loginContainer.style.display = "block";
+
+        // Adicione um evento de clique ao botão de login.
+        const loginButton = document.getElementById("login-button");
+        loginButton.addEventListener("click", function () {
+          // Obtenha o ID digitado pelo usuário.
+          const nameInput = document.getElementById("name-input");
+          const passInput = document.getElementById("pass-input");
+          const nameValue = nameInput.value;
+          const passValue = passInput.value;
+
+
+          // Faça uma solicitação de login via AJAX para a rota /login.
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/login-admin", true);
+          xhr.setRequestHeader("Content-Type", "application/json");
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              // O usuário foi autenticado com sucesso.
+              const response = JSON.parse(xhr.responseText);
+              const token = response.token;
+              const idClient = response.idClient;
+
+
+              // Redirecione o usuário para a mesma página com os parâmetros session e id na URL.
+              window.location.href = `?session=${token}&idClient=${idClient}`;
+            }
+          };
+
+          const requestBody = JSON.stringify({ nameCollect: nameValue, passCollect: passValue });
+          xhr.send(requestBody);
+        });
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const urlParams = new URLSearchParams(window.location.search);
+      const session = urlParams.get("session");
+      const idClient = urlParams.get("idClient");
+
+      if (session && idClient) {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/validacao", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              // Sessão válida
+              console.log("Sessão válida");
+              const divItens = document.getElementById("itens");
+              divItens.style.display = "block";
+
+            } else {
+              // Sessão expirada ou inválida, limpe os parâmetros da URL
+              window.location.href = "/";
+            }
+          }
+        };
+
+        const requestBody = JSON.stringify({ idClient, token: session });
+        xhr.send(requestBody);
+      }
+    });
+
+
     // Variável global para armazenar o índice da pergunta a ser editada
     let perguntaEditIndex = -1;
 

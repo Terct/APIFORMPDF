@@ -138,3 +138,55 @@ header {
   nav a:hover {
     color: #ff9900; /* Cor do texto dos links ao passar o mouse */
   }
+
+  /* Estilos para o contêiner de login */
+#login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Isso garante que o contêiner ocupe a altura total da tela */
+    background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente para destacar o formulário */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999; /* Para garantir que o formulário esteja acima de outros elementos */
+}
+
+
+/* Estilos para o balão de login */
+#login-box {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 300px; /* Largura do balão de login */
+    margin: 0 auto; /* Centralizar horizontalmente */
+    margin-top: 300px;
+  }
+  
+  #login-box h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  #id-input {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  #login-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  #login-button:hover {
+    background-color: #0056b3;
+  }

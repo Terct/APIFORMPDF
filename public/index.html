@@ -1,45 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css">
     <title>Criar Intância</title>
 </head>
+
 <body>
     <header>
         <nav>
-          <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/maneger">Gerenciador</a></li>
-          </ul>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/manager">Gerenciador</a></li>
+            </ul>
         </nav>
-      </header>
-      
+    </header>
 
-    <h1>Adicionar Cliente</h1>
-    <form id="myForm">
-        <label for="nomeCliente">Nome do Cliente:</label>
-        <input type="text" id="nomeCliente" name="nomeCliente" required>
-        <br>
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <label for="nicho">Nicho:</label>
-        <input type="text" id="nicho" name="nicho" required>
-        <br>
-        <button type="button" id="submitButton">Criar Pasta</button>
-    </form>
-    <div id="responseContainer"></div>
-    <!-- Modal de Resposta -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modalContent"></div>
+    <div id="login-container" style="display:none">
+        <div id="login-box">
+            <h1>Login</h1>
+            <input type="text" id="name-input" placeholder="Digite seu Usuário">
+            <input type="text" id="pass-input" placeholder="Digite sua Senha">
+            <button id="login-button">Login</button>
         </div>
     </div>
-
+    <div id="itens" style="display:none">
+        <h1>Criar Usuário</h1>
+        <form id="myForm">
+            <label for="nomeCliente">Nome do Usuário:</label>
+            <input type="text" id="nomeCliente" name="nomeCliente" required>
+            <br>
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" required>
+            <br>
+            <label for="nicho">Nicho:</label>
+            <input type="text" id="nicho" name="nicho" required>
+            <br>
+            <button type="button" id="submitButton">Criar Pasta</button>
+        </form>
+        <div id="responseContainer"></div>
+        <!-- Modal de Resposta -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modalContent"></div>
+            </div>
+        </div>
+    </div>
     <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get("session");
+            const idClient = urlParams.get("idClient");
+
+            // Adicione os parâmetros aos links de navegação
+            const homeLink = document.querySelector("header nav ul li:first-child a");
+            const managerLink = document.querySelector("header nav ul li:last-child a");
+
+            if (session && idClient) {
+                homeLink.href = `/?session=${session}&idClient=${idClient}`;
+                managerLink.href = `/manager?session=${session}&idClient=${idClient}`;
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get("session");
+            const id = urlParams.get("id");
+            const idclient = urlParams.get("idClient");
+
+            if (!session || !idclient) {
+                // Os parâmetros de session e id não estão presentes na URL, então exiba o balão de login.
+                const loginContainer = document.getElementById("login-container");
+                loginContainer.style.display = "block";
+
+                // Adicione um evento de clique ao botão de login.
+                const loginButton = document.getElementById("login-button");
+                loginButton.addEventListener("click", function () {
+                    // Obtenha o ID digitado pelo usuário.
+                    const nameInput = document.getElementById("name-input");
+                    const passInput = document.getElementById("pass-input");
+                    const nameValue = nameInput.value;
+                    const passValue = passInput.value;
+
+
+                    // Faça uma solicitação de login via AJAX para a rota /login.
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("POST", "/login-admin", true);
+                    xhr.setRequestHeader("Content-Type", "application/json");
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4 && xhr.status === 200) {
+                            // O usuário foi autenticado com sucesso.
+                            const response = JSON.parse(xhr.responseText);
+                            const token = response.token;
+                            const idClient = response.idClient;
+
+
+                            // Redirecione o usuário para a mesma página com os parâmetros session e id na URL.
+                            window.location.href = `?session=${token}&idClient=${idClient}`;
+                        }
+                    };
+
+                    const requestBody = JSON.stringify({ nameCollect: nameValue, passCollect: passValue });
+                    xhr.send(requestBody);
+                });
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const session = urlParams.get("session");
+            const idClient = urlParams.get("idClient");
+
+            if (session && idClient) {
+                const xhr = new XMLHttpRequest();
+                xhr.open("POST", "/validacao", true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            // Sessão válida
+                            console.log("Sessão válida");
+                            const divItens = document.getElementById("itens");
+                            divItens.style.display = "block";
+
+                        } else {
+                            // Sessão expirada ou inválida, limpe os parâmetros da URL
+                            window.location.href = "/";
+                        }
+                    }
+                };
+
+                const requestBody = JSON.stringify({ idClient, token: session });
+                xhr.send(requestBody);
+            }
+        });
+
+
         document.addEventListener("DOMContentLoaded", function () {
             const form = document.getElementById("myForm");
             const submitButton = document.getElementById("submitButton");
@@ -81,4 +183,5 @@
         });
     </script>
 </body>
+
 </html>
