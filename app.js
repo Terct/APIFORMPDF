@@ -8,7 +8,9 @@ const bodyParser = require('body-parser');
 const ExcelJS = require('exceljs');
 const Excel = require('excel4node');
 const { execPath } = require('process');
-
+const { google } = require('googleapis');
+const sheets = google.sheets('v4');
+const cheerio = require('cheerio');
 
 const app = express();
 const port = 3131;
@@ -501,6 +503,63 @@ app.post("/validacao", (req, res) => {
   res.status(200).json({ Mensagem: "Sessão válida" });
 });
 
+const multer = require('multer');
+const xlsx = require('xlsx');
+// Configuração do multer para o upload de arquivos
+const upload = multer({ dest: 'uploads/' }); // Defina o diretório onde os arquivos serão armazenados
+
+
+app.post('/importar-planilha/:id', upload.single('file'), (req, res) => {
+  const id = req.params.id;
+  const file = req.file; // O arquivo enviado estará em req.file
+
+  if (!file) {
+    return res.status(400).json({ message: 'Nenhum arquivo foi enviado.' });
+  }
+
+  // Leitura do arquivo XLSX
+  const workbook = xlsx.readFile(file.path);
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]]; // Obtém a primeira planilha
+
+  // Transforme a planilha em um array de objetos JSON
+  const data = xlsx.utils.sheet_to_json(worksheet);
+
+  console.log(data)
+
+  // Validação dos dados
+  const validData = data.filter(item => (
+    item.PERGUNTA && (item.RESPOSTA === 'SIM/NÃO' || item.RESPOSTA === 'LIVRE')
+  ));
+
+  if (validData.length === 0) {
+    return res.status(400).json({ message: "Dados inválidos. As perguntas devem estar na coluna 'Pergunta' e as respostas na coluna 'RESPOSTA'." });
+  }
+
+  // Caminho para o diretório com base no ID
+  const directoryPath = path.join(__dirname, 'database', id);
+
+  // Certifique-se de que o diretório exista, senão, crie-o
+  if (!fs.existsSync(directoryPath)) {
+    fs.mkdirSync(directoryPath);
+  }
+
+  // Caminho para o arquivo JSON dentro do diretório
+  const filePath = path.join(directoryPath, 'list.json');
+
+  // Ler o arquivo JSON existente ou criar um novo se não existir
+  let jsonData = [];
+  if (fs.existsSync(filePath)) {
+    jsonData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  }
+
+  // Adicionar as respostas aos dados existentes
+  jsonData = jsonData.concat(validData);
+
+  // Escrever os dados de volta no arquivo JSON
+  fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
+
+  return res.json({ message: "Respostas importadas com sucesso." });
+});
 
 
 app.listen(port, () => {

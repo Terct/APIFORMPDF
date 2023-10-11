@@ -22,7 +22,7 @@
         <div id="login-box">
             <h1>Login</h1>
             <input type="text" id="name-input" placeholder="Digite seu Usuário">
-            <input type="text" id="pass-input" placeholder="Digite sua Senha">
+            <input type="password" id="pass-input" placeholder="Digite sua Senha">
             <button id="login-button">Login</button>
         </div>
     </div>
@@ -173,7 +173,16 @@
                             modal.style.display = "none";
                         });
                     } else {
-                        responseContainer.innerHTML = `<div class="error">${xhr.responseText}</div>`;
+                        
+                        modalContent.innerHTML = `${xhr.responseText}<br><button id="closePopup">OK</button>`;
+                        modal.style.display = "block";
+
+                        // Adicione um evento de clique para fechar o modal
+                        const closePopupButton = document.getElementById("closePopup");
+                        closePopupButton.addEventListener("click", function () {
+                            modal.style.display = "none";
+                        });
+                        
                     }
                 };
 
