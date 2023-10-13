@@ -114,7 +114,7 @@ app.get("/baixar-excel", (req, res) => {
   const id = req.query.id;
   const responsavel = req.query.responsavel;
   const data = req.query.data;
-
+  
   // Construa o caminho do arquivo PDF
   const filePath = `./public/excel/${responsavel}/${id}-${data}.xlsx`;
 

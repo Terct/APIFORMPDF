@@ -139,3 +139,33 @@ header {
   #itens{
     margin-top: 100px;
   }
+
+  /* Estilo para a barra de pesquisa */
+#search-input {
+    width: 400px; /* Largura da barra de pesquisa */
+    padding: 10px; /* Espaçamento interno */
+    border: 1px solid #ccc; /* Borda da barra de pesquisa */
+    border-radius: 5px; /* Borda arredondada */
+    outline: none; /* Remove a borda ao ganhar foco */
+    margin-bottom: 20px;
+    
+  }
+  
+  /* Estilo para o botão de pesquisa (opcional) */
+  #search-button {
+    background-color: #007bff; /* Cor de fundo do botão */
+    color: #fff; /* Cor do texto do botão */
+    border: none; /* Remove a borda do botão */
+    padding: 10px 20px; /* Espaçamento interno do botão */
+    border-radius: 5px; /* Borda arredondada do botão */
+    cursor: pointer; /* Transforma o cursor em uma mão ao passar o mouse sobre o botão */
+  }
+  
+  /* Estilize o botão para o hover (quando o mouse passa por cima) */
+  #search-button:hover {
+    background-color: #0056b3; /* Cor de fundo alterada no hover */
+  }
+
+  #search-container {
+    text-align: right; /* Alinhe o conteúdo à esquerda */
+  }

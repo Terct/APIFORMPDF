@@ -25,8 +25,12 @@
         </div>
     </div>
     <div id="itens" style="display:none">
+
         <div id="clients-table-container">
             <h1>Lista de Formulários Recebidos</h1>
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="Pesquisar...">
+            </div>
             <!-- Tabela de clientes será adicionada aqui -->
         </div>
     </div>
@@ -118,7 +122,8 @@
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
-                        const clients = response.clients;
+                        const clients = response.clients.reverse();
+
 
                         // Se a resposta incluir clientes, crie a tabela
                         if (clients && clients.length > 0) {
@@ -196,6 +201,27 @@
 
             xhr.send();
         }
+
+        function formatData(data) {
+            const parts = data.split('/');
+            if (parts.length === 3) {
+                const day = parts[0];
+                const month = parts[1];
+                const year = parts[2];
+
+                // Certifique-se de que os valores de dia, mês e ano sejam números
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    // Crie uma nova data no formato "yyyy-mm-dd"
+                    const formattedDate = `${day}-${month}-${year}`;
+                    return formattedDate;
+                }
+            }
+
+            // Se a data não puder ser analisada corretamente, retorne uma string vazia ou um valor de erro
+            return "Data inválida";
+        }
+
+
         // Função para baixar o arquivo PDF
         function downloadPDF(id) {
             // Construir o link com o parâmetro "id"
@@ -207,16 +233,14 @@
 
         function downloadExcel(id, responsavel, data) {
             // Formate a data no modelo "dd-mm-yyyy"
-            const formattedDate = new Date(data).toLocaleDateString("pt-BR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-            }).replace(/\//g, "-"); // Substitua as barras por traços
+            const formattedDate = formatData(data);
 
             // Fazer uma solicitação AJAX para a rota de download de Excel
             const xhr = new XMLHttpRequest();
             xhr.open("GET", `/baixar-excel?id=${id}&responsavel=${responsavel}&data=${formattedDate}`, true);
             xhr.responseType = "blob";
+
+            console.log(formattedDate)
 
             xhr.onreadystatechange = function () {
                 if (xhr.readyState === 4) {
@@ -233,7 +257,49 @@
             };
 
             xhr.send();
+
         }
+
+        // Adicione este código após a função fetchAndDisplayClients
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // ...
+
+            // Adicione um evento de input ao campo de pesquisa
+            const searchInput = document.getElementById("search-input");
+            searchInput.addEventListener("input", function () {
+                const searchValue = searchInput.value.toLowerCase(); // Valor da pesquisa em minúsculas
+
+                // Obtenha todas as linhas da tabela (excluindo o cabeçalho)
+                const table = document.querySelector(".client-table");
+                const rows = table.querySelectorAll("tbody tr");
+
+                rows.forEach(function (row) {
+                    // Obtenha todas as células da linha
+                    const cells = row.querySelectorAll("td");
+                    let found = false; // Flag para controlar se a linha contém o valor da pesquisa
+
+                    cells.forEach(function (cell) {
+                        const cellText = cell.textContent.toLowerCase(); // Texto da célula em minúsculas
+
+                        // Se o valor da pesquisa estiver contido na célula, marque como encontrado
+                        if (cellText.includes(searchValue)) {
+                            found = true;
+                        }
+                    });
+
+                    // Defina a visibilidade da linha com base no resultado da pesquisa
+                    if (found) {
+                        row.style.display = ""; // Exibe a linha
+                    } else {
+                        row.style.display = "none"; // Oculta a linha
+                    }
+                });
+            });
+        });
+
+
+
 
     </script>
 </body>
