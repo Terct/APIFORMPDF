@@ -413,7 +413,7 @@ const dbURI = `mongodb+srv://${dbUser}:${dbPass}@mydatabase.x1wihtt.mongodb.net/
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Conexão com o MongoDB estabelecida');
-    app.listen(31313)
+    app.listen(41414)
     console.log('Server Runing')
 
   })

@@ -23,8 +23,8 @@ app.post("/login", (req, res) => {
   // Verifique o ID do usuário (substitua por sua própria lógica de autenticação).
   const id = req.body.id;
 
-  // Fazer uma requisição axios para 'http://localhost:31313/user' com os dados do usuário.
-  axios.post('http://localhost:31313/user', {
+  // Fazer uma requisição axios para 'http://localhost:41414/user' com os dados do usuário.
+  axios.post('http://localhost:41414/user', {
     Name: id,
     Pass: id
   })
@@ -50,7 +50,7 @@ app.get("/fetch-clients/:id", async (req, res) => {
     const id = req.params.id;
 
     // Fazer uma solicitação usando o Axios para a outra API com o ID
-    const response = await axios.get(`http://localhost:31313/clients/${id}`);
+    const response = await axios.get(`http://localhost:41414/clients/${id}`);
 
     // Retornar a resposta da outra API como resposta para esta rota
     //console.log(response.data)

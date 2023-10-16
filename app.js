@@ -191,7 +191,7 @@ app.post('/criar-pasta', async (req, res) => {
 
   // Fazer uma requisição Axios para criar o usuário
   try {
-    const response = await axios.post('http://localhost:31313/Creat/User', {
+    const response = await axios.post('http://localhost:41414/Creat/User', {
       Name: id,
       Pass: id,
       ConfirmPass: id,
@@ -424,7 +424,7 @@ app.delete('/apagar-client/:id', (req, res) => {
 
 
   // Após a remoção das pastas, faça uma requisição DELETE com o Axios
-  axios.delete(`http://localhost:31313/delete-client-user/${clientId}`)
+  axios.delete(`http://localhost:41414/delete-client-user/${clientId}`)
     .then(response => {
       if (response.status === 200) {
         console.log('Tudo saiu ok!'); // Mensagem de sucesso
@@ -449,8 +449,8 @@ app.post("/login-admin", (req, res) => {
 
   console.log(nameCollect, passCollect)
 
-  // Fazer uma requisição axios para 'http://localhost:31313/user' com os dados do usuário.
-  axios.post('http://localhost:31313/user-admin', {
+  // Fazer uma requisição axios para 'http://localhost:41414/user' com os dados do usuário.
+  axios.post('http://localhost:41414/user-admin', {
     Name: nameCollect,
     Pass: passCollect
   })
