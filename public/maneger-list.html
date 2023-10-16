@@ -42,6 +42,10 @@
         <button type="submit">Importar</button>
       </form>
 
+      <br>
+      <button id="gerarModeloBtn">Gerar Modelo JSON</button>
+    </br>
+
       <div id="modalEditar" class="modal" style="display: none;">
         <div class="modal-content">
           <span class="close" onclick="fecharModalEditar()">&times;</span>
@@ -385,6 +389,53 @@
 document.getElementById('importarForm').addEventListener('submit', function (event) {
   event.preventDefault(); // Impede o envio padrão do formulário
   importarPlanilha();
+});
+
+
+document.getElementById('gerarModeloBtn').addEventListener('click', function () {
+    // Função para contar a quantidade de itens na tabela
+    function contarItensNaTabela() {
+        const table = document.querySelector('table');
+        const rowCount = table.querySelectorAll('tbody tr').length;
+        return rowCount;
+    }
+
+    const qtdItens = contarItensNaTabela();
+
+    // Crie um objeto com os dados a serem enviados, incluindo a quantidade de itens na tabela
+    const data = {
+        qtdItens: qtdItens,
+    };
+
+    // Faça uma solicitação POST para a rota de geração de modelo
+    fetch('/gerar-modelo', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(modelo => {
+        // Crie um blob a partir do JSON retornado
+        const jsonBlob = new Blob([JSON.stringify(modelo, null, 2)], { type: 'application/json' });
+
+        // Crie um URL temporário para o blob
+        const url = window.URL.createObjectURL(jsonBlob);
+
+        // Crie um link de download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'modelo.json';
+
+        // Anexe o link ao documento e clique nele para iniciar o download
+        document.body.appendChild(a);
+        a.click();
+
+        // Libere o URL do blob quando o download estiver concluído
+        window.URL.revokeObjectURL(url);
+    });
 });
 
   </script>

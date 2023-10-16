@@ -280,7 +280,7 @@ app.post('/gerar-pdf', async (req, res) => {
     }
   }
 
-  
+
   const excelFileName = `${id}-${data.replace(/\//g, '-')}.xlsx`;
   const dirExcelFinal = `${excelDir}/${excelFileName}`
   const excelPath = path.join(excelDir, excelFileName);
@@ -395,15 +395,15 @@ async function convertXlsxToPdf(inputFilePath, idresponsavel, id, data, res) {
 
 app.delete('/apagar-client/:id', (req, res) => {
   const clientId = req.params.id;
-  
+
   // Lógica para remover o cliente do arquivo JSON
   const dataFilePath = path.join(__dirname, 'database', 'data.json');
   let data = JSON.parse(fs.readFileSync(dataFilePath));
-  
+
   const updatedData = data.filter(client => client.id !== clientId);
-  
+
   fs.writeFileSync(dataFilePath, JSON.stringify(updatedData, null, 2));
-  
+
   // Verificar e excluir diretórios associados ao cliente
   const pdfDirectoryPath = path.join(__dirname, 'public', 'pdfs', clientId);
   const excelDirectoryPath = path.join(__dirname, 'public', 'excel', clientId);
@@ -422,22 +422,22 @@ app.delete('/apagar-client/:id', (req, res) => {
   }
 
 
-  
-// Após a remoção das pastas, faça uma requisição DELETE com o Axios
-axios.delete(`http://localhost:31313/delete-client-user/${clientId}`)
-.then(response => {
-  if (response.status === 200) {
-    console.log('Tudo saiu ok!'); // Mensagem de sucesso
-  } else {
-    console.log('A solicitação não retornou o status 200.');
-  }
-})
-.catch(error => {
-  console.error('Ocorreu um erro ao fazer a solicitação DELETE:', error);
-});
 
-// Responda com sucesso (código 204) após a exclusão
-res.status(204).send();
+  // Após a remoção das pastas, faça uma requisição DELETE com o Axios
+  axios.delete(`http://localhost:31313/delete-client-user/${clientId}`)
+    .then(response => {
+      if (response.status === 200) {
+        console.log('Tudo saiu ok!'); // Mensagem de sucesso
+      } else {
+        console.log('A solicitação não retornou o status 200.');
+      }
+    })
+    .catch(error => {
+      console.error('Ocorreu um erro ao fazer a solicitação DELETE:', error);
+    });
+
+  // Responda com sucesso (código 204) após a exclusão
+  res.status(204).send();
 
 });
 
@@ -445,14 +445,14 @@ res.status(204).send();
 app.post("/login-admin", (req, res) => {
   // Verifique o ID do usuário (substitua por sua própria lógica de autenticação).
   const nameCollect = req.body.nameCollect;
-  const passCollect  = req.body.passCollect;
+  const passCollect = req.body.passCollect;
 
-  console.log(nameCollect , passCollect )
+  console.log(nameCollect, passCollect)
 
   // Fazer uma requisição axios para 'http://localhost:31313/user' com os dados do usuário.
   axios.post('http://localhost:31313/user-admin', {
-    Name: nameCollect ,
-    Pass: passCollect 
+    Name: nameCollect,
+    Pass: passCollect
   })
     .then(axiosResponse => {
       // Você pode processar a resposta da outra rota aqui, se necessário.
@@ -482,12 +482,12 @@ app.post("/validacao", (req, res) => {
 
   if (!session) {
     //console.log("Não encontarda!")
-      return res.status(401).json({ Mensagem: "Sessão não encontrada" });
+    return res.status(401).json({ Mensagem: "Sessão não encontrada" });
   }
 
   if (session.token !== token) {
     //console.log("Não confere!")
-      return res.status(401).json({ Mensagem: "Sessão expirada" });
+    return res.status(401).json({ Mensagem: "Sessão expirada" });
   }
 
   const datetime = new Date(session.datetime);
@@ -496,7 +496,7 @@ app.post("/validacao", (req, res) => {
   // Verifique se a sessão expirou (mais de 30 minutos da última atualização)
   if (currentDate - datetime > 30 * 60 * 1000) {
     //console.log("Expirada!")
-      return res.status(401).json({ Mensagem: "Sessão expirada" });
+    return res.status(401).json({ Mensagem: "Sessão expirada" });
   }
 
   // Sessão válida
@@ -560,6 +560,65 @@ app.post('/importar-planilha/:id', upload.single('file'), (req, res) => {
 
   return res.json({ message: "Respostas importadas com sucesso." });
 });
+
+
+app.post('/gerar-modelo', (req, res) => {
+  const qtds = req.body.qtdItens;
+  console.log(qtds)
+
+  // Carregue o conteúdo do arquivo JSON
+  const filePathElemnetorModel = './Models/elementorModel.json';
+  const elemnetorModel = JSON.parse(fs.readFileSync(filePathElemnetorModel, 'utf8'));
+
+  const filePathRes = './Models/resArray.json';
+  const jsonDataRes = JSON.parse(fs.readFileSync(filePathRes, 'utf8'));
+
+  const filePathPer = './Models/perArray.json';
+  const jsonDataPer = JSON.parse(fs.readFileSync(filePathPer, 'utf8'));
+
+  // Verifique se qtds é maior que 1
+  if (qtds > 1) {
+    const baseItemRes = jsonDataRes[0].elements[1]; // O modelo de item base
+    const baseItemPer = jsonDataRes[0].elements[1]; // O modelo de item base
+
+    // Adicione novos itens com base em qtds - 1
+    for (let i = 2; i <= qtds; i++) {
+      const newItemRes = JSON.parse(JSON.stringify(baseItemRes)); // Clone o item base
+      const newItemPer = JSON.parse(JSON.stringify(baseItemPer)); // Clone o item base
+
+      // Atualize _element_id e id
+      newItemRes.settings._element_id = `res${i}`;
+      newItemRes.id = `id${Math.floor(Math.random() * 100000)}`; // Você pode gerar IDs únicos como preferir
+      // Atualize _element_id e id
+
+      newItemPer.settings._element_id = `per${i}`;
+      newItemPer.id = `id${Math.floor(Math.random() * 100000)}`; // Você pode gerar IDs únicos como preferir
+
+      jsonDataRes[0].elements.push(newItemRes); // Adicione o novo item à matriz de elementos
+      jsonDataPer[0].elements.push(newItemPer); // Adicione o novo item à matriz de elementos
+    }
+
+
+    // Agora, você pode salvar o arquivo JSON atualizado de volta no disco se necessário
+    //fs.writeFileSync(filePathRes, JSON.stringify(jsonDataRes, null, 2), 'utf8');
+    // Agora, você pode salvar o arquivo JSON atualizado de volta no disco se necessário
+    //fs.writeFileSync(filePathPer, JSON.stringify(jsonDataPer, null, 2), 'utf8');
+
+    elemnetorModel.content[2].elements[1].elements[0].elements = jsonDataPer[0].elements;
+    elemnetorModel.content[2].elements[1].elements[1].elements = jsonDataRes[0].elements;
+
+    //fs.writeFileSync(filePathElemnetorModel, JSON.stringify(elemnetorModel, null, 2), 'utf8');
+
+
+
+    // Retorne os dados atualizados ou faça o que desejar
+    //console.log(jsonDataRes)
+
+    res.json(elemnetorModel);
+  }
+});
+
+
 
 
 app.listen(port, () => {

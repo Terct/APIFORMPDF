@@ -1,0 +1,718 @@
+{
+  "content": [
+    {
+      "id": "7e850ca5",
+      "settings": {
+        "min_height": {
+          "unit": "px",
+          "size": 0,
+          "sizes": []
+        },
+        "background_background": "classic",
+        "box_shadow_box_shadow_type": "yes",
+        "margin": {
+          "unit": "px",
+          "top": "-40",
+          "right": "0",
+          "bottom": "0",
+          "left": "0",
+          "isLinked": false
+        },
+        "__globals__": {
+          "background_color": "globals/colors?id=accent"
+        }
+      },
+      "elements": [],
+      "isInner": false,
+      "elType": "container"
+    },
+    {
+      "id": "337069d5",
+      "settings": {
+        "flex_direction": "column",
+        "background_background": "classic",
+        "background_color": "#FFFFFF"
+      },
+      "elements": [
+        {
+          "id": "24d2f72b",
+          "settings": {
+            "html": "<html>\r\n<head>\r\n<style>\r\n    @media print {\r\n        /* Estilo aplicado durante a impressão */\r\n        button {\r\n            display: none;\r\n        }\r\n    }\r\n\r\n    @page {\r\n        size: landscape;\r\n        margin: 0;\r\n    }\r\n</style>\r\n</head>\r\n<body>\r\n\r\n    <button onclick=\"executarImpressao()\">Imprimir</button>\r\n\r\n    <script>\r\n        function executarImpressao() {\r\n            window.print(); // Aciona a janela de impressão do navegador\r\n        }\r\n    </script>\r\n</body>\r\n</html>\r\n",
+            "_flex_align_self": "flex-end"
+          },
+          "elements": [],
+          "isInner": false,
+          "widgetType": "html",
+          "elType": "widget"
+        }
+      ],
+      "isInner": false,
+      "elType": "container"
+    },
+    {
+      "id": "41ca16c",
+      "settings": {
+        "flex_direction": "column",
+        "min_height": {
+          "unit": "px",
+          "size": 1440,
+          "sizes": []
+        },
+        "background_background": "classic",
+        "padding": {
+          "unit": "px",
+          "top": "10",
+          "right": "50",
+          "bottom": "100",
+          "left": "50",
+          "isLinked": false
+        },
+        "__globals__": {
+          "background_color": "globals/colors?id=accent"
+        }
+      },
+      "elements": [
+        {
+          "id": "6ac29ebf",
+          "settings": {
+            "content_width": "full",
+            "flex_direction": "row",
+            "flex_justify_content": "flex-start",
+            "flex_wrap": "wrap",
+            "margin": {
+              "unit": "px",
+              "top": "80",
+              "right": "0",
+              "bottom": "0",
+              "left": "0",
+              "isLinked": false
+            }
+          },
+          "elements": [
+            {
+              "id": "68d747b0",
+              "settings": {
+                "html": "<html>\r\n<input type=\"text\" id=\"idInput\" placeholder=\"Insira o ID\">\r\n<button id=\"consultarButton\">Consultar</button>\r\n\r\n<script>\r\n    // Função para fazer a requisição AJAX\r\n    function fazerRequisicao() {\r\n        var id = document.getElementById('idInput').value;\r\n\r\n        // Verificar se o parâmetro \"id\" foi encontrado\r\n        if (id) {\r\n            var url = 'https://myn8n.ddns.net/webhook/219f8394-5751-4568-b93a-a89e9853e14d?id=' + id;\r\n\r\n            var xhr = new XMLHttpRequest();\r\n            xhr.open('GET', url, true);\r\n            xhr.onreadystatechange = function () {\r\n                if (xhr.readyState === 4 && xhr.status === 200) {\r\n                    var response = JSON.parse(xhr.responseText); // Converter a resposta em um objeto\r\n                   \r\n                    \r\n                    document.getElementById('nomeClient').textContent = response.Cliente;\r\n                    document.getElementById('telClient').textContent = response.Numero;\r\n                    document.getElementById('dataClient').textContent = response.Data;\r\n\r\n                    var perguntasContainer = document.getElementById('perguntasContainer');\r\n                    var respostasContainer = document.getElementById('respostasContainer');\r\n                    var data = response.data\r\n                    \r\n\r\n                    data = data.trim(); // Remove espaços em branco extras\r\n                    data = '[' + data + ']'; // Adiciona colchetes para torná-lo uma matriz de objetos JSON válida\r\n\r\n                    data = JSON.parse(data); // Agora você pode analisar a string como JSON\r\n                    \r\n                     //console.log(data); // Exibir o objeto no console\r\n\r\n                    // Atualizar conteúdo das perguntas e respostas\r\n                    for (var i = 0; i < data.length; i++) {\r\n                        var perElement = document.getElementById('per' + (i + 1));\r\n                        var resElement = document.getElementById('res' + (i + 1));\r\n                        \r\n                        console.log(i)\r\n\r\n                        if (perElement) {\r\n                            perElement.querySelector('p').textContent = (i + 1) + ' – ' + data[i].PERGUNTA;\r\n\r\n                        if (resElement) {\r\n                            resElement.querySelector('p').textContent = data[i].RESPOSTA;\r\n                            }\r\n                        }\r\n                    }\r\n                }\r\n            };\r\n            xhr.send();\r\n        } else {\r\n            // Lidar com o caso em que o parâmetro \"id\" não foi encontrado na URL\r\n            console.log('Parâmetro \"id\" não encontrado.');\r\n        }\r\n    }\r\n\r\n    \r\n    // Associar a função a ser chamada quando o botão for clicado\r\ndocument.getElementById('consultarButton').addEventListener('click', fazerRequisicao);\r\n</script>\r\n</html>\r\n"
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "html",
+              "elType": "widget"
+            },
+            {
+              "id": "124316e1",
+              "settings": {
+                "title": "QUESTIONÁRIO",
+                "align": "center",
+                "title_color": "#000000",
+                "_element_width": "inherit",
+                "_flex_align_self": "center",
+                "__globals__": {
+                  "title_color": ""
+                }
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "heading",
+              "elType": "widget"
+            },
+            {
+              "id": "28e15ee",
+              "settings": {
+                "icon_list": [
+                  {
+                    "text": "Data:",
+                    "selected_icon": {
+                      "value": "far fa-calendar",
+                      "library": "fa-regular"
+                    },
+                    "_id": "9f5aa85"
+                  }
+                ],
+                "icon_color": "#000000",
+                "icon_typography_typography": "custom",
+                "icon_typography_font_family": "Roboto",
+                "icon_typography_font_size": {
+                  "unit": "px",
+                  "size": 18,
+                  "sizes": []
+                },
+                "icon_typography_font_weight": "400",
+                "text_shadow_text_shadow_type": "yes",
+                "text_shadow_text_shadow": {
+                  "horizontal": 0,
+                  "vertical": 0,
+                  "blur": 0,
+                  "color": "rgba(0,0,0,0.3)"
+                },
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 8,
+                  "sizes": []
+                }
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "icon-list",
+              "elType": "widget"
+            },
+            {
+              "id": "46eeeeca",
+              "settings": {
+                "editor": "<p>Agurdando Dados...</p>",
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 87,
+                  "sizes": []
+                },
+                "_element_id": "dataClient"
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "text-editor",
+              "elType": "widget"
+            },
+            {
+              "id": "6e1560d1",
+              "settings": {
+                "text": "Divisor",
+                "weight": {
+                  "unit": "px",
+                  "size": 2.1,
+                  "sizes": []
+                },
+                "_element_width": "inherit"
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "divider",
+              "elType": "widget"
+            },
+            {
+              "id": "3ccfa908",
+              "settings": {
+                "icon_list": [
+                  {
+                    "text": "Nome:",
+                    "selected_icon": {
+                      "value": "far fa-user",
+                      "library": "fa-regular"
+                    },
+                    "_id": "9f5aa85"
+                  }
+                ],
+                "icon_color": "#000000",
+                "icon_typography_typography": "custom",
+                "icon_typography_font_family": "Roboto",
+                "icon_typography_font_size": {
+                  "unit": "px",
+                  "size": 18,
+                  "sizes": []
+                },
+                "icon_typography_font_weight": "400",
+                "text_shadow_text_shadow_type": "yes",
+                "text_shadow_text_shadow": {
+                  "horizontal": 0,
+                  "vertical": 0,
+                  "blur": 0,
+                  "color": "rgba(0,0,0,0.3)"
+                },
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 11,
+                  "sizes": []
+                }
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "icon-list",
+              "elType": "widget"
+            },
+            {
+              "id": "38f4269",
+              "settings": {
+                "editor": "<p>Agurdando Dados...</p>",
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 87,
+                  "sizes": []
+                },
+                "_element_id": "nomeClient"
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "text-editor",
+              "elType": "widget"
+            },
+            {
+              "id": "399ab2f6",
+              "settings": {
+                "icon_list": [
+                  {
+                    "text": "Whatsapp:",
+                    "selected_icon": {
+                      "value": "fab fa-whatsapp",
+                      "library": "fa-brands"
+                    },
+                    "_id": "0d0b108"
+                  }
+                ],
+                "icon_color": "#000000",
+                "icon_typography_typography": "custom",
+                "icon_typography_font_family": "Roboto",
+                "icon_typography_font_size": {
+                  "unit": "px",
+                  "size": 18,
+                  "sizes": []
+                },
+                "icon_typography_font_weight": "400",
+                "text_shadow_text_shadow_type": "yes",
+                "text_shadow_text_shadow": {
+                  "horizontal": 0,
+                  "vertical": 0,
+                  "blur": 0,
+                  "color": "rgba(0,0,0,0.3)"
+                },
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 11,
+                  "sizes": []
+                }
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "icon-list",
+              "elType": "widget"
+            },
+            {
+              "id": "1f9fb228",
+              "settings": {
+                "editor": "<p>Agurdando Dados...</p>",
+                "text_color": "#000000",
+                "_element_width": "initial",
+                "_element_custom_width": {
+                  "unit": "%",
+                  "size": 87,
+                  "sizes": []
+                },
+                "_element_id": "telClient"
+              },
+              "elements": [],
+              "isInner": false,
+              "widgetType": "text-editor",
+              "elType": "widget"
+            }
+          ],
+          "isInner": false,
+          "elType": "container"
+        },
+        {
+          "id": "1b3bdda5",
+          "settings": {
+            "content_width": "full",
+            "width": {
+              "unit": "%",
+              "size": 100,
+              "sizes": []
+            },
+            "min_height": {
+              "unit": "px",
+              "size": 23,
+              "sizes": []
+            },
+            "flex_direction": "row",
+            "flex_justify_content": "flex-start",
+            "flex_wrap": "wrap",
+            "margin": {
+              "unit": "px",
+              "top": "80",
+              "right": "0",
+              "bottom": "0",
+              "left": "0",
+              "isLinked": false
+            },
+            "_flex_align_self": "center"
+          },
+          "elements": [
+            {
+              "id": "43598f49",
+              "settings": {
+                "content_width": "full",
+                "width": {
+                  "unit": "%",
+                  "size": 48,
+                  "sizes": []
+                },
+                "border_border": "solid",
+                "border_radius": {
+                  "unit": "px",
+                  "top": "1",
+                  "right": "1",
+                  "bottom": "01",
+                  "left": "1",
+                  "isLinked": false
+                },
+                "_element_id": "perguntasContainer"
+              },
+              "elements": [
+                {
+                  "id": "7ec9fb2a",
+                  "settings": {
+                    "title": "Perguntas",
+                    "title_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 25,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "600",
+                    "_padding": {
+                      "unit": "px",
+                      "top": "5",
+                      "right": "5",
+                      "bottom": "5",
+                      "left": "5",
+                      "isLinked": true
+                    },
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "0",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "0",
+                      "isLinked": false
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "heading",
+                  "elType": "widget"
+                },
+                {
+                  "id": "3ed5a676",
+                  "settings": {
+                    "editor": "<p>1 - Aguardando Dados...</p>",
+                    "text_columns": "1",
+                    "column_gap": {
+                      "unit": "px",
+                      "size": 0,
+                      "sizes": []
+                    },
+                    "align": "left",
+                    "text_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto Flex",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 15,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "400",
+                    "typography_line_height": {
+                      "unit": "px",
+                      "size": 20,
+                      "sizes": []
+                    },
+                    "typography_letter_spacing": {
+                      "unit": "px",
+                      "size": 0.9,
+                      "sizes": []
+                    },
+                    "typography_word_spacing": {
+                      "unit": "px",
+                      "size": 3,
+                      "sizes": []
+                    },
+                    "_padding": {
+                      "unit": "px",
+                      "top": "10",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "10",
+                      "isLinked": false
+                    },
+                    "_element_id": "per1",
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "1",
+                      "right": "1",
+                      "bottom": "1",
+                      "left": "1",
+                      "isLinked": true
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "text-editor",
+                  "elType": "widget"
+                },
+                {
+                  "id": "id95486",
+                  "settings": {
+                    "editor": "<p><span style=\"letter-spacing: 0.9px;\">Aguardando Dados...</span><br></p>",
+                    "text_columns": "1",
+                    "column_gap": {
+                      "unit": "px",
+                      "size": 0,
+                      "sizes": []
+                    },
+                    "align": "left",
+                    "text_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto Flex",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 15,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "400",
+                    "typography_line_height": {
+                      "unit": "px",
+                      "size": 20,
+                      "sizes": []
+                    },
+                    "typography_letter_spacing": {
+                      "unit": "px",
+                      "size": 0.9,
+                      "sizes": []
+                    },
+                    "typography_word_spacing": {
+                      "unit": "px",
+                      "size": 3,
+                      "sizes": []
+                    },
+                    "_padding": {
+                      "unit": "px",
+                      "top": "10",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "10",
+                      "isLinked": false
+                    },
+                    "_element_id": "per2",
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "1",
+                      "right": "1",
+                      "bottom": "1",
+                      "left": "1",
+                      "isLinked": true
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "text-editor",
+                  "elType": "widget"
+                }
+              ],
+              "isInner": false,
+              "elType": "container"
+            },
+            {
+              "id": "6a17a64e",
+              "settings": {
+                "content_width": "full",
+                "width": {
+                  "unit": "%",
+                  "size": 48,
+                  "sizes": []
+                },
+                "border_border": "solid",
+                "border_radius": {
+                  "unit": "px",
+                  "top": "1",
+                  "right": "1",
+                  "bottom": "01",
+                  "left": "1",
+                  "isLinked": false
+                },
+                "_element_id": "respostasContainer"
+              },
+              "elements": [
+                {
+                  "id": "509af12c",
+                  "settings": {
+                    "title": "Resposta",
+                    "title_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 25,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "600",
+                    "_padding": {
+                      "unit": "px",
+                      "top": "5",
+                      "right": "5",
+                      "bottom": "5",
+                      "left": "5",
+                      "isLinked": true
+                    },
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "0",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "0",
+                      "isLinked": false
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "heading",
+                  "elType": "widget"
+                },
+                {
+                  "id": "68e4d77f",
+                  "settings": {
+                    "editor": "<p><span style=\"letter-spacing: 0.9px;\">Aguardando Dados...</span><br></p>",
+                    "text_columns": "1",
+                    "column_gap": {
+                      "unit": "px",
+                      "size": 0,
+                      "sizes": []
+                    },
+                    "align": "left",
+                    "text_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto Flex",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 15,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "400",
+                    "typography_line_height": {
+                      "unit": "px",
+                      "size": 20,
+                      "sizes": []
+                    },
+                    "typography_letter_spacing": {
+                      "unit": "px",
+                      "size": 0.9,
+                      "sizes": []
+                    },
+                    "typography_word_spacing": {
+                      "unit": "px",
+                      "size": 3,
+                      "sizes": []
+                    },
+                    "_padding": {
+                      "unit": "px",
+                      "top": "10",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "10",
+                      "isLinked": false
+                    },
+                    "_element_id": "res1",
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "1",
+                      "right": "1",
+                      "bottom": "1",
+                      "left": "1",
+                      "isLinked": true
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "text-editor",
+                  "elType": "widget"
+                },
+                {
+                  "id": "id33597",
+                  "settings": {
+                    "editor": "<p><span style=\"letter-spacing: 0.9px;\">Aguardando Dados...</span><br></p>",
+                    "text_columns": "1",
+                    "column_gap": {
+                      "unit": "px",
+                      "size": 0,
+                      "sizes": []
+                    },
+                    "align": "left",
+                    "text_color": "#000000",
+                    "typography_typography": "custom",
+                    "typography_font_family": "Roboto Flex",
+                    "typography_font_size": {
+                      "unit": "px",
+                      "size": 15,
+                      "sizes": []
+                    },
+                    "typography_font_weight": "400",
+                    "typography_line_height": {
+                      "unit": "px",
+                      "size": 20,
+                      "sizes": []
+                    },
+                    "typography_letter_spacing": {
+                      "unit": "px",
+                      "size": 0.9,
+                      "sizes": []
+                    },
+                    "typography_word_spacing": {
+                      "unit": "px",
+                      "size": 3,
+                      "sizes": []
+                    },
+                    "_padding": {
+                      "unit": "px",
+                      "top": "10",
+                      "right": "0",
+                      "bottom": "0",
+                      "left": "10",
+                      "isLinked": false
+                    },
+                    "_element_id": "res2",
+                    "_border_border": "solid",
+                    "_border_width": {
+                      "unit": "px",
+                      "top": "1",
+                      "right": "1",
+                      "bottom": "1",
+                      "left": "1",
+                      "isLinked": true
+                    }
+                  },
+                  "elements": [],
+                  "isInner": false,
+                  "widgetType": "text-editor",
+                  "elType": "widget"
+                }
+              ],
+              "isInner": false,
+              "elType": "container"
+            }
+          ],
+          "isInner": false,
+          "elType": "container"
+        }
+      ],
+      "isInner": false,
+      "elType": "container"
+    }
+  ],
+  "page_settings": [],
+  "version": "0.4",
+  "title": "mode base consultas",
+  "type": "page"
+}
