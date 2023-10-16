@@ -293,8 +293,8 @@ app.post('/gerar-pdf', async (req, res) => {
   worksheet.getCell('A2').value = 'Nome:';
   worksheet.getCell('A3').value = 'Telefone:';
   worksheet.getCell('A4').value = 'Data:';
-  worksheet.getCell('B2').value = nome;
-  worksheet.getCell('B3').value = telefone;
+  worksheet.getCell('B2').value = cliente;
+  worksheet.getCell('B3').value = num;
   worksheet.getCell('B4').value = data;
 
   // Configurar cabeçalho da tabela de perguntas e respostas
