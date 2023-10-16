@@ -606,6 +606,7 @@ app.post('/gerar-modelo', (req, res) => {
 
     elemnetorModel.content[2].elements[1].elements[0].elements = jsonDataPer[0].elements;
     elemnetorModel.content[2].elements[1].elements[1].elements = jsonDataRes[0].elements;
+    elemnetorModel.title = `Modelo de Consulta com ${qtds} perguntas`
 
     //fs.writeFileSync(filePathElemnetorModel, JSON.stringify(elemnetorModel, null, 2), 'utf8');
 
