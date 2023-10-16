@@ -598,19 +598,9 @@ app.post('/gerar-modelo', (req, res) => {
       jsonDataPer[0].elements.push(newItemPer); // Adicione o novo item à matriz de elementos
     }
 
-
-    // Agora, você pode salvar o arquivo JSON atualizado de volta no disco se necessário
-    //fs.writeFileSync(filePathRes, JSON.stringify(jsonDataRes, null, 2), 'utf8');
-    // Agora, você pode salvar o arquivo JSON atualizado de volta no disco se necessário
-    //fs.writeFileSync(filePathPer, JSON.stringify(jsonDataPer, null, 2), 'utf8');
-
     elemnetorModel.content[2].elements[1].elements[0].elements = jsonDataPer[0].elements;
     elemnetorModel.content[2].elements[1].elements[1].elements = jsonDataRes[0].elements;
     elemnetorModel.title = `Modelo de Consulta com ${qtds} perguntas`
-
-    //fs.writeFileSync(filePathElemnetorModel, JSON.stringify(elemnetorModel, null, 2), 'utf8');
-
-
 
     // Retorne os dados atualizados ou faça o que desejar
     //console.log(jsonDataRes)
