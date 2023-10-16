@@ -1,0 +1,82 @@
+{
+  "name": "Send Queue - Create PDF",
+  "nodes": [
+    {
+      "parameters": {
+        "queue": "filaForm",
+        "options": {
+          "arguments": {
+            "argument": [
+              {
+                "key": "x-queue-type",
+                "value": "quorum"
+              }
+            ]
+          },
+          "durable": true
+        }
+      },
+      "id": "e509aea3-f915-47fe-94fc-0b0d7b36637c",
+      "name": "RabbitMQ",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        320
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": "SLWb72OITZs4qtXg",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "addfilaform",
+        "options": {}
+      },
+      "id": "d39ec7da-8fa6-4adf-b6ac-9ff5e06d14d9",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        820,
+        320
+      ],
+      "webhookId": "ddb28575-8e9f-4076-bc29-3d7ae5b916e0"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "RabbitMQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7cbfdc45-51be-45fe-b5cd-98aec144180b",
+  "id": "co9ApNy4yLdIlhjY",
+  "meta": {
+    "instanceId": "fa95f5e8cf4727686e332f55d228902212799694e882c2da1bd6aa474a77c1dd"
+  },
+  "tags": [
+    {
+      "createdAt": "2023-10-05T15:32:44.510Z",
+      "updatedAt": "2023-10-05T15:32:44.510Z",
+      "id": "r0NsrTcDSd4R52H4",
+      "name": "SendForm"
+    }
+  ]
+}

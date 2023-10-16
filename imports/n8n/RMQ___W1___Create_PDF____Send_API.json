@@ -1,0 +1,150 @@
+{
+  "name": "RMQ - W1 - Create PDF  - Send API",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[{{ $json.content.data }}]",
+        "options": {}
+      },
+      "id": "e7de84de-741d-4f03-a0fe-2f7407785603",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1160,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "queue": "filaFormCreatePDF",
+        "options": {
+          "arguments": {
+            "argument": [
+              {
+                "key": "x-queue-type",
+                "value": "quorum"
+              }
+            ]
+          },
+          "acknowledge": "executionFinishes",
+          "jsonParseBody": true,
+          "parallelMessages": 1
+        }
+      },
+      "id": "5de41906-6d03-4ba7-be50-3ebbc659d3ca",
+      "name": "RabbitMQ Trigger",
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        700,
+        280
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": "SLWb72OITZs4qtXg",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.data }}",
+              "operation": "startsWith",
+              "value2": "PDF gerado com sucesso"
+            }
+          ]
+        }
+      },
+      "id": "79545380-7045-492b-8957-ffff3235d9c1",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        280
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "url",
+              "stringValue": "=http://192.95.37.240:3131/gerar-pdf?id={{ $json.content.id }}&idresponsavel={{ $json.content.Responsavel }}&data={{ $json.content.Data }}&num={{ $json.content.Numero }}&cliente={{ $json.content.Cliente }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "58504050-91a3-4555-9bb2-6a2987930f48",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.1,
+      "position": [
+        920,
+        280
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RabbitMQ Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "68280193-b725-4650-b80e-eda36eaf820d",
+  "id": "8Zelvx8p4dgk6BY8",
+  "meta": {
+    "instanceId": "fa95f5e8cf4727686e332f55d228902212799694e882c2da1bd6aa474a77c1dd"
+  },
+  "tags": [
+    {
+      "createdAt": "2023-10-05T15:32:44.510Z",
+      "updatedAt": "2023-10-05T15:32:44.510Z",
+      "id": "r0NsrTcDSd4R52H4",
+      "name": "SendForm"
+    }
+  ]
+}

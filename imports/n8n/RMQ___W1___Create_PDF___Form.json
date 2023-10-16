@@ -1,0 +1,188 @@
+{
+  "name": "RMQ - W1 - Create PDF - Form",
+  "nodes": [
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "data",
+              "value": "={{ $json.content.body.formulario }}"
+            },
+            {
+              "name": "Responsavel",
+              "value": "={{ $json.content.body.idResponsavel }}"
+            },
+            {
+              "name": "Data",
+              "value": "={{ new Date().toLocaleDateString('pt-BR') }}"
+            },
+            {
+              "name": "Hora",
+              "value": "={{new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', timeStyle: 'short' }) }}"
+            },
+            {
+              "name": "Cliente",
+              "value": "={{ $json.content.body.nomeCliente }}"
+            },
+            {
+              "name": "Numero",
+              "value": "={{ $json.content.body['Gererar Formulário'] }}"
+            },
+            {
+              "name": "CPF",
+              "value": "={{ $json.content.body.CPF }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "66abd6fb-dcb9-4248-b1a6-dc4a9aec4f61",
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1720,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "queue": "filaForm",
+        "options": {
+          "arguments": {
+            "argument": [
+              {
+                "key": "x-queue-type",
+                "value": "quorum"
+              }
+            ]
+          },
+          "acknowledge": "executionFinishes",
+          "jsonParseBody": true,
+          "parallelMessages": 1
+        }
+      },
+      "id": "cc715c4d-7ce0-4e50-b97d-870c6daf7aaa",
+      "name": "RabbitMQ Trigger1",
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        60
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": "SLWb72OITZs4qtXg",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "queue": "filaFormCreatePDF",
+        "options": {
+          "arguments": {
+            "argument": [
+              {
+                "key": "x-queue-type",
+                "value": "quorum"
+              }
+            ]
+          },
+          "durable": true
+        }
+      },
+      "id": "64faee6a-8fc1-4f6d-8784-d2c007c444b4",
+      "name": "RabbitMQ",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        2220,
+        60
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": "SLWb72OITZs4qtXg",
+          "name": "RabbitMQ account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "clients",
+        "fields": "Cliente,Numero,CPF,data,Responsavel,Data,Hora",
+        "options": {}
+      },
+      "id": "7350faf6-441c-4677-ac0a-3da3d8a2e618",
+      "name": "MongoDB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        60
+      ],
+      "credentials": {
+        "mongoDb": {
+          "id": "sDc5DC8tbwU1j5GM",
+          "name": "Armando - DataFormPDF"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RabbitMQ Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "RabbitMQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ab5114fb-6164-4bfb-81d7-abf370940b3d",
+  "id": "JV7AzJpCroNL3kz8",
+  "meta": {
+    "instanceId": "fa95f5e8cf4727686e332f55d228902212799694e882c2da1bd6aa474a77c1dd"
+  },
+  "tags": [
+    {
+      "createdAt": "2023-10-05T15:32:44.510Z",
+      "updatedAt": "2023-10-05T15:32:44.510Z",
+      "id": "r0NsrTcDSd4R52H4",
+      "name": "SendForm"
+    }
+  ]
+}
